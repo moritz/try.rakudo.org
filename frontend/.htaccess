@@ -1,0 +1,4 @@
+RewriteEngine on
+RewriteRule ^$ cgi/shell.pl
+RewriteRule ^status$ cgi/status.pl
+RewriteRule ^run$ cgi/run.pl
