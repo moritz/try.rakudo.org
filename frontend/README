@@ -1,0 +1,31 @@
+Some notes on code structure and design decisions:
+
+ - the code suffers somewhat from my reinventing-the-wheel-syndrome:
+   I'm not really fond of most JS-libs, so I rolled my own at <js/lib.js>
+
+ - the shell uses a plain HTML input element; this makes the interface
+   less web-2.0-y, but allows to use the browser history
+
+ - it's possible to make the shell usable without client-side scripting;
+   this means that the root file must be a script (output must be pulled
+   from the DB); a cleaner approach than the current <index.pl> would be
+   mod_rewrite
+
+ - session handling is not implemented yet - the server-side of things
+   is just a dummy; as I have absolutely no experience with web-development
+   with Perl, so help would be appreciated
+
+ - the 'tutor' part of the interface (which will provide step-by-step
+   instructions through some code examples) is not implemented yet
+
+ - communication with the server-side goes through GET-requests:
+
+    * running a command sends a `?cmd=...` request; expected responses are
+      `204 No Content` if scripting is enabled and a 30x redirect if disabled
+      to reload the root file (which will query the DB for new output)
+
+    * if scripting is enabled, the script requests `?status` until it
+      receives a `200 OK` response, whereas `202 Accepted` instructs to
+      keep polling
+
+cygx
