@@ -5,8 +5,9 @@ use CGI qw/:standard/;
 use File::Basename;
 
 # TODO: session handling, display stored output
+my $root = dirname($0).'/..';
 
 print header;
-open(my $file, '<', dirname($0).'/../markup/shell.html');
+open(my $file, '<', $root.'/markup/shell.html');
 print while(<$file>);
 close($file);

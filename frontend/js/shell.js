@@ -35,8 +35,12 @@ function checkStatus() {
 		switch(this.status) {
 			case 200:
 			say(this.responseText);
-			setStatus('ready');
-			unlock(true);
+			var ref = this.getResponseHeader('Refresh');
+			if(ref) setTimeout(requestStatus, ref * 1000 || timeout);
+			else {
+				setStatus('ready');
+				unlock(true);
+			}
 			break;
 
 			case 202:
@@ -55,7 +59,7 @@ function requestStatus() {
 	req.onreadystatechange = checkStatus;
 
 	try {
-		req.open('GET', url + '?status', true);
+		req.open('POST', url, true);
 		req.send(null);
 	}
 	catch(e) {
