@@ -14,7 +14,8 @@
   <h1>Try Rakudo and Learn Perl 6 -- all in your browser
    <img src="http://perl6.org/camelia-logo.png"></h1>
 
-  <form action="./" method="GET" id="RakudoShell-form">
+  <!-- RakudoShell -->
+  <form action="run" method="GET" id="RakudoShell-form">
    <div id="RakudoShell-out"></div>
    <input id="RakudoShell-in" name="cmd">
   </form>
@@ -22,8 +23,11 @@
    RakudoShell.init(750);
   </script>
 
-  <!-- TODO: tutor goes here -->
-  <p><a href="README">README</a></p>
+  <!-- RakudoTutor -->
+  <h2 id="RakudoTutor-title">Lesson 1: Misc Stuff</h2>
+  <script type="text/javascript">
+   RakudoTutor.init();
+  </script>
 
  </body>
 </html>

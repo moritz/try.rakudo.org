@@ -3,7 +3,7 @@ new (function() {
 RakudoShell = this;
 RakudoShell.init = init;
 
-var url = '.';
+var url = 'status';
 var isLocked, timeout, input, output;
 
 var focus = // only focus on input field if nothing is selected
