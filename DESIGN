@@ -117,7 +117,7 @@ Table Sessions
 Fields:
   - sid : uint64, unique, auto-increment
   - backend-port : uint16
-  - state : char // a - active, b - busy, x - expired
+  - state : char // u - uninitialized, a - active, b - busy, x - expired
   - creation-time : timestamp
   - last-access : timestamp
   - last-message : timestamp

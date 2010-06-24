@@ -5,4 +5,4 @@ use warnings;
 
 use autoconnect;
 
-print defined SESSION ? 'SESSION defined' : 'SESSION not defined';
+print SESSION->status(1);
