@@ -1,4 +1,6 @@
-#TODO: add error handling code where apropriate (create!)
+#TODO: add error handling code (create!)
+#TODO: add DBI::rollback code if commit fails
+#TODO: only call DBI::finish where apropriate
 
 package Session;
 
@@ -107,7 +109,7 @@ sub has_id {
 }
 
 sub has_query_string {
-	return length $ENV{QUERY_STRING} ? 1 : '';
+	return (defined $ENV{QUERY_STRING} and length $ENV{QUERY_STRING}) ? 1 : '';
 }
 
 sub root {
@@ -143,6 +145,12 @@ sub connect {
 		UPDATE `Sessions`
 		SET `last_access` = CURRENT_TIMESTAMP
 		WHERE `id` = ? ;
+	});
+
+	$self->{messages_stmt} = $db->prepare(q{
+		SELECT `contents`, 'type' FROM `Messages`
+		WHERE `session_id` = ? AND `sequence_number` >= ?
+		ORDER BY `sequence_number`;
 	});
 
 	$self->{db} = $db;
@@ -208,6 +216,32 @@ sub create {
 
 	$self->{id} = defined $idstr ? u64::hex($idstr) : undef;
 	return $self->{id};
+}
+
+sub load_messages {
+	#TODO: error handling
+	my ($self, $seq_num, $contents_ref, $type_ref) = @_;
+	my $stmt = $self->{messages_stmt};
+	return eval {
+		$stmt->execute($self->{id}, $seq_num);
+		$stmt->bind_col(1, $contents_ref)
+			if defined $contents_ref;
+		$stmt->bind_col(2, $type_ref)
+			if defined $type_ref;
+		1;
+	};
+}
+
+sub next_message {
+	#TODO: error handling
+	my $self = shift;
+	return $self->{messages_stmt}->fetch;
+}
+
+sub unload_messages {
+	#TODO: error handling
+	my $self = shift;
+	$self->{messages_stmt}->finish;
 }
 
 sub param {

@@ -53,10 +53,18 @@ EXEC: {
 		or SESSION->fail(500, 'Could not open template file');
 
 	while(<$template>) {
-		if(/^\s*__RAKUDO_SHELL_OUT__\s*$/) {
-			print '--> TODO: get messages <!--', "\n";
+		if(not /^\s*__RAKUDO_SHELL_OUT__\s*$/) { print; }
+		else {
+			my $current = undef;
+			if(not SESSION->load_messages(0, \$current)) {
+				print STDERR $@;
+				print 'TODO', "\n";
+				next;
+			}
+
+			print $current, "\n" while SESSION->next_message;
+			SESSION->unload_messages;
 		}
-		else { print; }
 	}
 
 	close $template;
