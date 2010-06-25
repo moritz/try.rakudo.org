@@ -9,8 +9,26 @@ use u64;
 
 our $VERSION = '0.01';
 
-use constant ID_DEFAULT_MASK => u64::hex('5d422f795246703a');
-use constant ID_DEFAULT_SHIFT => 22;
+use constant DEFAULT_ID_MASK => u64::hex('5d422f795246703a');
+use constant DEFAULT_ID_SHIFT => 22;
+use constant DEFAULT_FAIL_FOOTER =>
+	'Try again later or bug someone on #perl6 at irc.freenode.net';
+
+#TODO: add error handling code where apropriate (create!)
+
+use constant {
+	EOK => 0,
+	ECONNECT => 1,
+	EDB => 2,
+	EID => 3
+};
+
+use constant ERROR_STRINGS => (
+	'no error',
+	'connection failure',
+	'database error',
+	'illegal id'
+);
 
 sub new {
 	my ($class, %hash) = @_;
@@ -20,13 +38,19 @@ sub new {
 sub initialize {
 	my $self = shift;
 
+	$self->{errno} = EOK
+		unless defined $self->{errno};
+
+	$self->{strerror} = (ERROR_STRINGS)[$self->{errno}]
+		unless defined $self->{strerror};
+
 	$self->{logging} = 0
 		unless defined $self->{logging};
 
-	$self->{id_mask} = ID_DEFAULT_MASK
+	$self->{id_mask} = DEFAULT_ID_MASK
 		unless defined $self->{id_mask};
 
-	$self->{id_shift} = ID_DEFAULT_SHIFT
+	$self->{id_shift} = DEFAULT_ID_SHIFT
 		unless defined $self->{id_shift};
 
 	$self->{query} = CGI->new
@@ -39,7 +63,36 @@ sub initialize {
 	$self->{root} = $self->{query}->url(-base=>1)
 		unless defined $self->{root};
 
+	$self->{fail_footer} = DEFAULT_FAIL_FOOTER
+		unless defined $self->{fail_footer};
+
+	$self->{charset} = 'utf-8'
+		unless defined $self->{charset};
+
 	return $self;
+}
+
+sub log {
+	my ($self, $msg) = @_;
+	print STDERR $msg, "\n" if $self->{logging};
+}
+
+sub errno {
+	my $self = shift;
+	return $self->{errno};
+}
+
+sub strerror {
+	my $self = shift;
+	return $self->{strerror};
+}
+
+sub raise {
+	my ($self, $errno, $msg) = @_;
+	$self->{errno} = $errno;
+	$self->{strerror} = (ERROR_STRINGS)[$errno].(defined $msg ? ': '.$msg : '');
+	$self->log($self->{strerror});
+	return undef;
 }
 
 sub has_id {
@@ -47,10 +100,15 @@ sub has_id {
 	return defined $self->{id};
 }
 
+sub root {
+	my $self = shift;
+	return $self->{root};
+}
+
 sub connect {
 	my $self = shift;
 	my $db = DBI->connect(@_)
-		or return undef;
+		or return $self->raise(ECONNECT);
 
 	$db->{AutoCommit} = 0;
 	$db->{RaiseError} = 1;
@@ -62,13 +120,19 @@ sub connect {
 
 	$self->{create_stmt} = $db->prepare(q{
 		INSERT INTO `Sessions` (
-			`id` , `status` , `creation_time` , `last_access`)
+			`id`, `status`, `creation_time`, `last_access`)
 		VALUES (
-			NULL , 'u', NOW() , CURRENT_TIMESTAMP);
+			NULL, 'u', NOW(), CURRENT_TIMESTAMP);
 	});
 
 	$self->{last_id_stmt} = $db->prepare(q{
-		SELECT LAST_INSERT_ID();
+		SELECT HEX(LAST_INSERT_ID());
+	});
+
+	$self->{access_stmt} = $db->prepare(q{
+		UPDATE `Sessions`
+		SET `last_access` = CURRENT_TIMESTAMP
+		WHERE `id` = ? ;
 	});
 
 	$self->{db} = $db;
@@ -80,62 +144,71 @@ sub disconnect {
 	eval { $self->{db}->disconnect; };
 }
 
-sub log {
-	my $self = shift;
-	my $msg = shift;
-	print $msg, "\n" if $self->{logging};
-}
-
 sub status {
-	my $self = shift;
-	my $update = shift;
+	my ($self, $update) = @_;
 	return $self->{status} if not $update;
 
-	my $stmt = $self->{status_stmt};
-	my $status = eval {
-		$stmt->execute($self->{id});
+	my $access_stmt = $self->{access_stmt};
+	my $status_stmt = $self->{status_stmt};
+	my $status = undef;
+	eval {
+		$access_stmt->execute($self->{id});
+		$status_stmt->execute($self->{id});
 		$self->{db}->commit;
-		$stmt->bind_col(1, \$self->{status});
-		return $stmt->fetch ? $self->{status} : undef;
+		$status_stmt->bind_col(1, \$status);
+		$status_stmt->fetch;
 	};
 
-	$stmt->finish;
-	$self->log($stmt->err or 'status() returned no result')
-		if not defined $status;
+	$access_stmt->finish;
+	$status_stmt->finish;
 
-	return $status;
+	my $error = $access_stmt->err or $status_stmt->err;
+	return $self->raise(EDB, $error) if $error;
+	return $self->raise(EID) if not defined $status;
+
+	$self->{status} = $status;
+	return $self->{status};
 }
 
 sub create {
 
-	# TODO: add logic to get next free port
-	# IDEA: just put the whole 64k port range into the DB
-	# TODO: error handling: how to handle the case of no free port
+	#TODO: error handling
+
+	#TODO: add logic to get next free port
+	#IDEA: just put the whole 64k port range into the DB
 
 	my $self = shift;
 	my $create_stmt = $self->{create_stmt};
 	my $last_id_stmt = $self->{last_id_stmt};
 
-	my $id = eval {
+	my $idstr = undef;
+	eval {
 		$create_stmt->execute();
 		$last_id_stmt->execute();
 		$self->{db}->commit;
-		$last_id_stmt->bind_col(1, \$self->{id});
-		return $last_id_stmt->fetch ? $self->{id} : undef;
+		$last_id_stmt->bind_col(1, \$idstr);
+		$last_id_stmt->fetch;
 	};
 
 	$create_stmt->finish;
 	$last_id_stmt->finish;
-	$self->log($create_stmt->err or $last_id_stmt or
-			'create() returned no result')
-		if not defined $id;
+	$self->log($create_stmt->err or $last_id_stmt->err or
+		'create() returned no result')
+		if not defined $idstr;
 
-	return $id;
+	$self->{id} = defined $idstr ? u64::hex($idstr) : undef;
+	return $self->{id};
 }
 
 sub param {
 	my $self = shift;
 	return $self->{query}->param(@_);
+}
+
+sub header {
+	my ($self, %args) = @_;
+	$args{-charset} = $self->{charset};
+	return $self->{query}->header(%args);
 }
 
 sub redirect {
@@ -146,15 +219,28 @@ sub redirect {
 
 sub decode_id {
 	my ($self, $string) = @_;
-	my ($mask, $shift) = @$self{'id_mask', 'id_shift'};
 	return undef if not $string =~ /^[0-9a-f]{16}$/;
+	my ($mask, $shift) = @$self{'id_mask', 'id_shift'};
 	return u64::rot(u64::hex($string) ^ $mask, $shift);
 }
 
 sub encode_id {
 	my ($self, $value) = @_;
+	return undef if not u64::isa($value);
 	my ($mask, $shift) = @$self{'id_mask', 'id_shift'};
 	return u64::lc(u64::rot($value, -$shift) ^ $mask);
+}
+
+sub fail {
+	my ($self, $status, $msg, $footer, %args) = @_;
+	$self = {query=>CGI->new, fail_footer=>DEFAULT_FAIL_FOOTER}
+		if not defined $self;
+	$footer = $self->{fail_footer}
+		if not defined $footer;
+
+	print $self->{query}->header(
+		-status=>$status, -type=>'text/plain', -charset=>'utf-8', %args),
+		$msg, "\n", $footer;
 }
 
 1;

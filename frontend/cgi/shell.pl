@@ -4,29 +4,55 @@ use strict;
 use warnings;
 
 use autoconnect;
+use File::Basename 'dirname';
 
-# This script is responsible for sending the HTML document to the client. The
-# expected request type is GET.
-# If no session-id is provided, a new session will be created. This involves
-# adding an entry to the Sessions table, querying for its sid, choosing an unused
-# TCP port and starting a new backend process. A 30x response navigates the
-# client to / with the session-id appended.
-# If a session-id is provided, the DB is queried for the state of the session and
-# all entries in the Messages table belonging to this id. The messages will be
-# written to the output area of the HTML document. If the session is busy or
-# expired, the user input elements will be disabled.
+use constant TEMPLATE_PATH => '../markup/shell.html';
 
-if(not defined SESSION) {
-	#TODO: fatal error
-}
+EXEC: {
 
-elsif(not SESSION->has_id) {
-	#TODO: create session
-	#dummy id for now:
-	SESSION->{id} = 42;
-	SESSION->redirect('/');
-}
+	if(not defined SESSION) {
+		Session::fail(undef, 503, 'Could not connect to database');
+		last EXEC;
+	}
 
-else {
-	#TODO: check status, print HTML
+	if(not SESSION->has_id) {
+		(SESSION->create and SESSION->redirect('/'))
+			or SESSION->fail(500, 'Could not create session');
+		last EXEC;
+	}
+
+	if(not defined SESSION->status(1)) {
+		if(SESSION->errno == Session::EDB) {
+			SESSION->fail(500, 'Could not read database');
+			last EXEC;
+		}
+
+		if(SESSION->errno == Session::EID) {
+			SESSION->fail(404, 'Illegal session-id',
+				'You will shortly be redirected to a new session',
+				-refresh=>'5; '.SESSION->root);
+			last EXEC;
+		}
+
+		SESSION->fail(500,
+			'Could not read session data due to an unexpected error condition');
+
+		last EXEC;
+	}
+
+	#TODO: check status, modify HTML output accordingly
+
+	print SESSION->header;
+	open my $template, '<', dirname($0).'/'.TEMPLATE_PATH
+		or SESSION->fail(500, 'Could not open template file');
+
+	while(<$template>) {
+		if(/^\s*__RAKUDO_SHELL_OUT__\s*$/) {
+			print '--> TODO: get messages <!--', "\n";
+		}
+		else { print; }
+	}
+
+	close $template;
+
 }
