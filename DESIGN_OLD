@@ -1,5 +1,7 @@
+[[ NOTE: this does no longer acurately describe the implementation ]]
+
 [[ TODO:
-  - think about race-conditions involving busy-flag
+  - think about race-conditions involving busy-flag [DONE]
     possible solution: single-threaded backend? non-blocking io?
   - bug sorear about adding partial reads to IO::Pty::HalfDuplex
 ]]
