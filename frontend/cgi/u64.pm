@@ -17,6 +17,7 @@ BEGIN {
 		*int = \&int_native;
 		*uc = \&uc_native;
 		*lc = \&lc_native;
+		*isa = \&isa_native;
 	}
 	else {
 		*new = \&new_virtual;
@@ -24,6 +25,7 @@ BEGIN {
 		*int = \&int_virtual;
 		*uc = \&uc_virtual;
 		*lc = \&lc_virtual;
+		*isa = \&isa_virtual;
 	}
 }
 
@@ -51,6 +53,16 @@ sub hi { shift()->[0] }
 sub lo { shift()->[1] }
 sub noop { shift() }
 
+sub isa_native {
+	my $value = shift;
+	defined $value and u64::int($value) == $value;
+}
+
+sub isa_virtual {
+	my $value = shift;
+	defined $value and UNIVERSAL::isa($value, 'u64');
+}
+
 sub hex_native {
 	no warnings qw(portable);
 	@_ = shift() =~ /^(?:0x)?([0-9a-f]{0,16})$/i;
@@ -68,9 +80,12 @@ sub int_native {
 
 sub int_virtual {
 	my $value = shift();
-	my $hi = CORE::int((($value / 2**32) % 2**32 + 2**32) % 2**32);
-	my $lo = CORE::int((($value % 2**32) + 2**32) % 2**32);
-	new($hi, $lo);
+	if(u64::isa($value)) { $value }
+	else {
+		my $hi = CORE::int((($value / 2**32) % 2**32 + 2**32) % 2**32);
+		my $lo = CORE::int((($value % 2**32) + 2**32) % 2**32);
+		new($hi, $lo);
+	}
 }
 
 sub uc_native {
@@ -112,21 +127,21 @@ sub bitwise_not {
 
 sub bitwise_or {
 	my ($a, $b) = @_;
-	UNIVERSAL::isa($b, 'u64') ?
+	u64::isa($b) ?
 		new($a->hi | $b->hi, $a->lo | $b->lo) :
 		new($a->hi, $a->lo | $b);
 }
 
 sub bitwise_xor {
 	my ($a, $b) = @_;
-	UNIVERSAL::isa($b, 'u64') ?
+	u64::isa($b) ?
 		new($a->hi ^ $b->hi, $a->lo ^ $b->lo) :
 		new($a->hi, $a->lo ^ $b);
 }
 
 sub bitwise_and {
 	my ($a, $b) = @_;
-	UNIVERSAL::isa($b, 'u64') ?
+	u64::isa($b) ?
 		new($a->hi & $b->hi, $a->lo & $b->lo) :
 		new(0, $a->lo & $b);
 }
