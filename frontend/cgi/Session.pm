@@ -1,3 +1,5 @@
+#TODO: add error handling code where apropriate (create!)
+
 package Session;
 
 use strict;
@@ -9,12 +11,16 @@ use u64;
 
 our $VERSION = '0.01';
 
-use constant DEFAULT_ID_MASK => u64::hex('5d422f795246703a');
-use constant DEFAULT_ID_SHIFT => 22;
-use constant DEFAULT_FAIL_FOOTER =>
-	'Try again later or bug someone on #perl6 at irc.freenode.net';
+use constant {
+	DEFAULT_ID_MASK => u64::hex('5d422f795246703a'),
+	DEFAULT_ID_SHIFT => 22
+};
 
-#TODO: add error handling code where apropriate (create!)
+use constant {
+	DEFAULT_FAIL_HEADERS => { -type=>'text/plain', -charset=>'utf-8' },
+	DEFAULT_FAIL_FOOTER =>
+		'Try again later or bug someone on #perl6 at irc.freenode.net'
+};
 
 use constant {
 	EOK => 0,
@@ -47,18 +53,8 @@ sub initialize {
 	$self->{logging} = 0
 		unless defined $self->{logging};
 
-	$self->{id_mask} = DEFAULT_ID_MASK
-		unless defined $self->{id_mask};
-
-	$self->{id_shift} = DEFAULT_ID_SHIFT
-		unless defined $self->{id_shift};
-
 	$self->{query} = CGI->new
 		unless defined $self->{query};
-
-	$self->{id} = defined $ENV{QUERY_STRING} ?
-		$self->decode_id($ENV{QUERY_STRING}) : undef
-		unless defined $self->{id};
 
 	$self->{root} = $self->{query}->url(-base=>1)
 		unless defined $self->{root};
@@ -68,6 +64,16 @@ sub initialize {
 
 	$self->{charset} = 'utf-8'
 		unless defined $self->{charset};
+
+	$self->{id_mask} = DEFAULT_ID_MASK
+		unless defined $self->{id_mask};
+
+	$self->{id_shift} = DEFAULT_ID_SHIFT
+		unless defined $self->{id_shift};
+
+	$self->{id} = $self->has_query_string ?
+		$self->decode_id($ENV{QUERY_STRING}) : undef
+		unless defined $self->{id};
 
 	return $self;
 }
@@ -98,6 +104,10 @@ sub raise {
 sub has_id {
 	my $self = shift;
 	return defined $self->{id};
+}
+
+sub has_query_string {
+	return length $ENV{QUERY_STRING} ? 1 : '';
 }
 
 sub root {
@@ -232,14 +242,14 @@ sub encode_id {
 }
 
 sub fail {
-	my ($self, $status, $msg, $footer, %args) = @_;
-	$self = {query=>CGI->new, fail_footer=>DEFAULT_FAIL_FOOTER}
+	my ($self, $status, $msg, $footer, %headers) = @_;
+	$self = { query=>CGI->new, fail_footer=>DEFAULT_FAIL_FOOTER }
 		if not defined $self;
 	$footer = $self->{fail_footer}
 		if not defined $footer;
 
 	print $self->{query}->header(
-		-status=>$status, -type=>'text/plain', -charset=>'utf-8', %args),
+		-status=>$status, %{(DEFAULT_FAIL_HEADERS)}, %headers),
 		$msg, "\n", $footer;
 }
 

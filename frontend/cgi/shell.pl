@@ -6,7 +6,9 @@ use warnings;
 use autoconnect;
 use File::Basename 'dirname';
 
-use constant TEMPLATE_PATH => '../markup/shell.html';
+use constant TEMPLATE_PATH => dirname($0).'/'.'../markup/shell.html';
+use constant REDIRECTION_FOOTER =>
+	'You will shortly be redirected to a fresh session';
 
 EXEC: {
 
@@ -16,26 +18,30 @@ EXEC: {
 	}
 
 	if(not SESSION->has_id) {
-		(SESSION->create and SESSION->redirect('/'))
-			or SESSION->fail(500, 'Could not create session');
+		if(SESSION->has_query_string) {
+			SESSION->fail(404, 'Illegal session-id', REDIRECTION_FOOTER,
+				-refresh=>'5; '.SESSION->root);
+		}
+		else {
+			(SESSION->create and SESSION->redirect('/'))
+				or SESSION->fail(500, 'Could not create session');
+		}
+
 		last EXEC;
 	}
 
 	if(not defined SESSION->status(1)) {
 		if(SESSION->errno == Session::EDB) {
 			SESSION->fail(500, 'Could not read database');
-			last EXEC;
 		}
-
-		if(SESSION->errno == Session::EID) {
-			SESSION->fail(404, 'Illegal session-id',
-				'You will shortly be redirected to a new session',
+		elsif(SESSION->errno == Session::EID) {
+			SESSION->fail(404, 'Unknown session-id', REDIRECTION_FOOTER,
 				-refresh=>'5; '.SESSION->root);
-			last EXEC;
 		}
-
-		SESSION->fail(500,
-			'Could not read session data due to an unexpected error condition');
+		else {
+			SESSION->fail(500, 'Could not read session data due to an '.
+				'unexpected error condition');
+		}
 
 		last EXEC;
 	}
@@ -43,7 +49,7 @@ EXEC: {
 	#TODO: check status, modify HTML output accordingly
 
 	print SESSION->header;
-	open my $template, '<', dirname($0).'/'.TEMPLATE_PATH
+	open my $template, '<', TEMPLATE_PATH
 		or SESSION->fail(500, 'Could not open template file');
 
 	while(<$template>) {
