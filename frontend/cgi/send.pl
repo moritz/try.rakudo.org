@@ -5,6 +5,8 @@ use warnings;
 
 use autoconnect;
 
+#IDEA: return 204 if server is busy and one tries to send
+
 # This script relays user input to the backend. The expected request type is
 # POST, with a mandatory parameter named 'cmd' containing the user input and
 # an optional parameter named 'js', which signifies that client-side scripting is

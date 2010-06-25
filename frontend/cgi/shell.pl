@@ -48,6 +48,9 @@ EXEC: {
 
 	#TODO: check status, modify HTML output accordingly
 
+# u - uninitialized, a - active, b - busy, x - expired
+#IDEA: add class to body
+
 	print SESSION->header;
 	open my $template, '<', TEMPLATE_PATH
 		or SESSION->fail(500, 'Could not open template file');
