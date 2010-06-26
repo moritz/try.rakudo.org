@@ -16,52 +16,109 @@ h1 img {
 	bottom: -80px;
 }
 
-#RakudoShell-form {
-	position: absolute;
-	border: 1px solid black;
-	background: darkGray;
-	height: 15em;
+textarea {
 }
 
-#RakudoShell-out {
-	white-space: pre;
-	font-family: monospace;
-	width: 40em;
-	max-height: 13.5em;
-	overflow: auto;
-	background: lightGray;
-	overflow: auto;
+#camelia {
+    position: absolute;
+    top: -60px;
 }
 
-#RakudoShell-in {
-	font-family: monospace;
-	border: 2px solid black;
-	background: lavender;
-	display: block;
-	width: 100%;
-	font-size: 1em;
-	padding-left: 2px;
-	margin-left: -3px;
-	margin-bottom: -2px;
+#content {
+    margin: 0 auto;
+    font-weight: bold;
+    -moz-box-shadow: 5px 5px 10px #888;
+    -webkit-box-shadow: 5px 5px 10px #888;
+    border: 0.2em solid #63a4ff;
+    background: #80b5ff;
+    border-radius: 1em;
+    -moz-border-radius: 1em;
+    -webkit-border-radius: 1em;
+    position: relative;
+    padding: 0em 0 0em 0;
 }
 
-.RakudoShell-status-ready #RakudoShell-in {
-	border-color: lime;
+#content textarea {
+    padding: 0;
+    margin: 0;
 }
 
-.RakudoShell-status-locked {
-	cursor: wait;
+#content h1 {
+    font-size: 24px;
 }
 
-.RakudoShell-status-locked #RakudoShell-in {
-	border-color: red;
-	cursor: wait;
+#stdout p {
+    line-height: 18px;
+    font-size: 18px;
+    margin: 0;
+    padding: 0;
 }
 
-.RakudoShell-status-failed #RakudoShell-in {
-	border-color: maroon;
+#stdout p.stderr {
+    background: #EB939A;
+    margin: 3px 0 3px 0;
+    padding: 0 3px 3px;
+    color: #332b33;
+    border: 2px solid #eb0e20;
 }
 
-#RakudoTutor-title {
-	margin-top: 11em;
+#stdout {
+    border: 3px solid black;
+    background: #274458;
+    color: #E1EFFF;
+    height: 300px;
+    overflow: auto;
+    padding: 3px 6px;
+}
+
+#stdin {
+    font-size: 18px;
+    font-weight: normal;
+    width: 577px;
+    position: relative;
+    border: 1px solid black;
+    background: white;
+    resize: none;
+    overflow: auto;
+}
+
+#stdin_form {
+    position: relative;
+}
+
+#send_btn {
+    font-family: 'Courier New', Courier, monospace;
+    border: 2px solid #ccc;
+    width: 50px;
+    text-align: center;
+    background: #bbb;
+    padding: 12px 0 10px 0;
+    position: absolute;
+    left: 580px;
+}
+
+#send_btn.active {
+    background: #222;
+    border: 2px solid #111;
+    color: white;
+}
+
+th {
+    text-align: right;
+}
+
+.keyword {
+    color: #FFB454;
+}
+
+.var  {
+    color: #95F39F;
+}
+
+.num {
+    color: #E9DD72;
+}
+
+.str {
+    color: #5FE461;
 }
