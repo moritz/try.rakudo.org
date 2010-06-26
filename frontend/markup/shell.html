@@ -11,23 +11,33 @@
   <script type="text/javascript" src="../js/jquery.scrollTo-1.4.2.js"></script>
   <script>
     $(function () {
-        var keywords = ['class', 'my', 'our', 'has', 'sub', 'method', 'submethod', 'module', 'role', 'package', 'token', 'grammar', 'augment', 'use'];
+        var keywords = ['class', 'let', 'my', 'our', 'state', 'temp', 'has', 'constant', 'sub',
+                        'method', 'submethod', 'module', 'role', 'package', 'token', 'grammar',
+                        'augment', 'use', 'require', 'is', 'does', 'take', 'do', 'when', 'next',
+                        'last', 'redo', 'return', 'contend', 'maybe', 'defer', 'if', 'else', 
+                        'elsif', 'unless', 'self', 'enum', 'slang', 'subset', 'macro', 'multi',
+                        'proto', 'only', 'rule', 'regex', 'category', 'default', 'exit', 'make', 
+                        'continue', 'break', 'goto', 'leave', 'async', 'lift', 'as', 'but', 'trusts',
+                        'of', 'returns', 'handles', 'where', 'augment', 'supersede', 'die', 'fail', 
+                        'try', 'warn'];
         var variables = /([&%$@](?:[*^!?.])?(?:[a-zA-Z_][_a-zA-Z0-9:\-]*)?)/gm;
         var constants = { str: [ /((?:'.*')|(?:".*"))(?!>)/gm, "<strong class=\"str\">$1</strong>" ],
-                          num: [ /\b((?:0x[0-9a-f]+)|(?:0b[01]+)|(?:0d[0-9]+)|(?:0o[0-7]+)|(?:[0-9]+(?:\.[0-9]+)?))\b/igm, '<span class="num">$1</span>']
+                          num: [ /\b(NaN|Inf|(?:0x[0-9a-f_]+)|(?:0b[01_]+)|(?:0d[0-9_]+)|(?:0o[0-7_]+)|(?:[0-9][0-9_]*(?:\.[0-9_]+)?))\b/igm, '<span class="num">$1</span>']
                          };
         
-        function highlight() {
+        function highlight(text) {
+            $.each(constants, function (klass) {
+                text = text.replace(this[0], this[1]);
+            });
             
+            text = text.replace(variables, '<b class="var">$1</b>');
+            text = text.replace(new RegExp('\\b('+ keywords.join('|') +')(?!=)\\b', 'gm'), "<span class=\"keyword\">$1</span>");
+            return text
         }
         function format(input, output, error) {
             /* This function could be used for basic syntax highlighting. */
-            $.each(constants, function (klass) {
-                input = input.replace(this[0], this[1]);
-            });
-            
-            input = input.replace(variables, '<b class="var">$1</b>');
-            input = input.replace(new RegExp('\\b('+ keywords.join('|') +')(?!=)\\b', 'gm'), "<span class=\"keyword\">$1</span>");
+            input = highlight(input);
+            output = highlight(output);
             
             var result = "<p>" + input + "</p>";
             
