@@ -1,36 +1,133 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
- "http://www.w3.org/TR/html4/strict.dtd">
+<!DOCTYPE html>
 <html>
  <head>
   <meta http-equiv="content-type" content="text/html; charset=UTF-8">
   <title>Try Rakudo and Learn Perl 6 -- all in your browser</title>
-  <link rel="stylesheet" type="text/css" href="markup/shell.css">
-  <script type="text/javascript" src="js/lib.js"></script>
-  <script type="text/javascript" src="js/shell.js"></script>
-  <script type="text/javascript" src="js/tutor.js"></script>
+  <link rel="stylesheet" type="text/css" href="./shell.css">
+  <script type="text/javascript" src="http://www.google.com/jsapi"></script>
+  <script type="text/javascript">
+  google.load('jquery', '1.4');
+  </script>
+  <script type="text/javascript" src="./jquery.scrollTo-1.4.2.js"></script>
+  <script>
+    $(function () {
+        var keywords = ['class', 'my', 'our', 'has', 'sub', 'method', 'submethod', 'module', 'role', 'package', 'token', 'grammar', 'augment', 'use'];
+        var variables = /([&%$@](?:[*^!?.])?(?:[a-zA-Z_][_a-zA-Z0-9:\-]*)?)/gm;
+        var constants = { str: [ /((?:'.*')|(?:".*"))(?!>)/gm, "<strong class=\"str\">$1</strong>" ],
+                          num: [ /\b((?:0x[0-9a-f]+)|(?:0b[01]+)|(?:0d[0-9]+)|(?:0o[0-7]+)|(?:[0-9]+(?:\.[0-9]+)?))\b/igm, '<span class="num">$1</span>']
+                         };
+        
+        function highlight() {
+            
+        }
+        function format(input, output, error) {
+            /* This function could be used for basic syntax highlighting. */
+            $.each(constants, function (klass) {
+                input = input.replace(this[0], this[1]);
+            });
+            
+            input = input.replace(variables, '<b class="var">$1</b>');
+            input = input.replace(new RegExp('\\b('+ keywords.join('|') +')(?!=)\\b', 'gm'), "<span class=\"keyword\">$1</span>");
+            
+            var result = "<p>" + input + "</p>";
+            
+            if (error) {
+                result += "<p class=\"stderr\">&#x2192;&nbsp;"+error+"</p>";
+            }
+            else {
+                result += "<p><span>&#x2192;</span>&nbsp;" + output + "</p>";
+            }
+            
+            
+            return result;
+        }
+        var commands = {
+            clear : function () {
+                $("#stdout").html("");
+            }
+        };
+        var error_tracker = false;
+        var a = 0; // this is to cause a fake error every few calls
+        $("#stdin").keypress(function (evt) {
+            if (evt.keyCode == 13 && evt.shiftKey == false) {
+                //$.getJSON("./test.js",
+                (function (result) {
+                    $("#feedback").text(result.feedback + "a: " + a);
+                    if (a == 3) {
+                        $("#stdout").append(format($("#stdin").val(), result.stdout, result.stderr));
+                        a = 0;
+                    }
+                    else {
+                        $("#stdout").append(format($("#stdin").val(), result.stdout));
+                    }
+                    $("#stdout").scrollTo($("#stdout p:last-child"), 300);
+                    a++;
+                })({"feedback": "Hello World",
+                "stdout": "Result...",
+                "stderr": "Fake Error: Confused at line 1, near \"a * 3\\n\""});
+                
+                $.each(commands, function (k, v) {
+                    if ($("#stdin").val() == k) {
+                        v();
+                    }
+                });
+                
+                $("#stdin").val("");
+                evt.preventDefault();
+            }
+            
+            var str = $('#stdin').val();
+            var cols = $('#stdin').attr('cols');
+
+            var linecount = 0;
+            $.each(str.split("\n"), function(k, l) {
+              linecount += Math.ceil( this.length / cols );
+            });
+            
+            $('#stdin').attr('rows', linecount == 0 ? 2 : linecount + 1);
+        });
+        
+        
+        $("#stdin").focus();
+    });
+  </script>
  </head>
  <body>
+    <div id="content">
+        <h1>Try Rakudo and Learn Perl 6 <img src="http://perl6.org/camelia-logo.png"><br /><small>&#151; all in your browser</small></h1>
+        <div id="form" action="try" method="post">
+            <div>
+                <pre id="stdout"></pre>
+            </div>
+            <form>
+                <textarea id="stdin" cols="56" rows="2"></textarea>
+            </form>
+        </div>
 
-  <h1>Try Rakudo and Learn Perl 6 -- all in your browser
-   <img src="http://perl6.org/camelia-logo.png"></h1>
-
-  <!-- RakudoShell -->
-  <form action="run" method="POST" id="RakudoShell-form">
-   <div id="RakudoShell-out"><!--
-    __RAKUDO_SHELL_OUT__
---></div>
-   <input id="RakudoShell-in" name="cmd">
-  </form>
-  <script type="text/javascript">
-   // TODO: adapt to new frontend design
-   // RakudoShell.init(750);
-  </script>
-
-  <!-- RakudoTutor -->
-  <h2 id="RakudoTutor-title">Lesson 1: Misc Stuff</h2>
-  <script type="text/javascript">
-   RakudoTutor.init();
-  </script>
-
+        <div id="feedback">
+            <p>
+                Please enter some code.
+            </p>
+        </div>
+        <div id="commands">
+            <p>
+                <strong>Commands List</strong>
+            </p>
+            <table>
+                <tr>
+                    <th>clear</th><td>- Resets the console.</td>
+                </tr>
+                <tr>
+                    <th>shift+&#x21A9;</th><td>-New line in the text box</td>
+                </tr>
+                <tr>
+                    <th>chapter #</th><td>- Goes to chapter # of the tutorial.</td>
+                </tr>
+                <tr>
+                    <th>links</th><td>- Some useful Links.</td>
+                </tr>
+            </table>
+        </div>
+    </div>
  </body>
 </html>
