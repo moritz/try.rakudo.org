@@ -2,7 +2,7 @@
 #TODO: add DBI::rollback code if commit fails
 #TODO: only call DBI::finish where apropriate
 
-package Session;
+package Rakudo::Try::Session;
 
 use strict;
 use warnings;
@@ -38,9 +38,30 @@ use constant ERROR_STRINGS => (
 	'illegal id'
 );
 
+my %actions = ('-errors' => \&import_errors);
+my $has_errors = 0;
+
+sub import_errors {
+	return if $has_errors;
+	$has_errors = 1;
+	*Session::EOK = sub { EOK };
+	*Session::ECONNECT = sub { ECONNECT };
+	*Session::EDB = sub { EDB };
+	*Session::EID = sub { EID };
+}
+
+sub import {
+	no strict 'refs';
+	shift;
+	for(@_) {
+		if(/^-/) { $actions{$_}->(); }
+		else { *{'Session::'.$_} = \&{$Rakudo::Try::Session::{$_}}; }
+	}
+}
+
 sub new {
-	my ($class, %hash) = @_;
-	return bless(\%hash, $class)->initialize;
+	my %hash = @_;
+	return bless(\%hash)->initialize;
 }
 
 sub initialize {
@@ -259,6 +280,29 @@ sub redirect {
 	my ($self, $path) = @_;
 	print $self->{query}->redirect(
 		$self->{root}.$path.'?'.$self->encode_id($self->{id}));
+	exit;
+}
+
+sub respond {
+	my ($self, $status, $body, %headers) = @_;
+	$self = bless { query=>CGI->new }
+		if not defined $self;
+	$body = ''
+		if not defined $body;
+
+	print $self->{query}->header(-status=>$status, %headers), $body;
+	exit;
+}
+
+sub fail {
+	my ($self, $status, $msg, $footer, %headers) = @_;
+	$self = bless { query=>CGI->new, fail_footer=>DEFAULT_FAIL_FOOTER }
+		if not defined $self;
+	$footer = $self->{fail_footer}
+		if not defined $footer;
+
+	$self->respond($status, $msg."\n".$footer,
+		%{(DEFAULT_FAIL_HEADERS)}, %headers);
 }
 
 sub decode_id {
@@ -273,18 +317,6 @@ sub encode_id {
 	return undef if not u64::isa($value);
 	my ($mask, $shift) = @$self{'id_mask', 'id_shift'};
 	return u64::lc(u64::rot($value, -$shift) ^ $mask);
-}
-
-sub fail {
-	my ($self, $status, $msg, $footer, %headers) = @_;
-	$self = { query=>CGI->new, fail_footer=>DEFAULT_FAIL_FOOTER }
-		if not defined $self;
-	$footer = $self->{fail_footer}
-		if not defined $footer;
-
-	print $self->{query}->header(
-		-status=>$status, %{(DEFAULT_FAIL_HEADERS)}, %headers),
-		$msg, "\n", $footer;
 }
 
 1;

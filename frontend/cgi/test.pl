@@ -3,6 +3,6 @@
 use strict;
 use warnings;
 
-use autoconnect;
+use u64 qw(hex64);
 
-print SESSION->status(1);
+print hex64('f3');

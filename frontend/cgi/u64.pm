@@ -47,7 +47,22 @@ use overload
 	'abs' => \&noop,
 	'int' => \&lo;
 
-sub new_native { shift() * 2**32 + shift() }
+my %exports = (
+	u64 => \&new,
+	hex64 => \&hex,
+	int64 => \&int,
+	uc64 => \&uc,
+	lc64 => \&lc,
+	rot64 => \&rot
+);
+
+sub import {
+	no strict 'refs';
+	shift();
+	*{'::'.$_} = $exports{$_} for @_;
+}
+
+sub new_native { (shift() << 32) + shift() }
 sub new_virtual { bless [@_] }
 sub hi { shift()->[0] }
 sub lo { shift()->[1] }
