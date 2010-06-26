@@ -1,0 +1,36 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
+ "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+ <head>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <title>Try Rakudo and Learn Perl 6 -- all in your browser</title>
+  <link rel="stylesheet" type="text/css" href="markup/shell.css">
+  <script type="text/javascript" src="js/lib.js"></script>
+  <script type="text/javascript" src="js/shell.js"></script>
+  <script type="text/javascript" src="js/tutor.js"></script>
+ </head>
+ <body>
+
+  <h1>Try Rakudo and Learn Perl 6 -- all in your browser
+   <img src="http://perl6.org/camelia-logo.png"></h1>
+
+  <!-- RakudoShell -->
+  <form action="send" method="POST" id="RakudoShell-form">
+   <div id="RakudoShell-out"><!--
+    __RAKUDO_SHELL_OUT__
+--></div>
+   <input id="RakudoShell-in" name="input">
+  </form>
+  <script type="text/javascript">
+   // TODO: adapt to new frontend design
+   // RakudoShell.init(750);
+  </script>
+
+  <!-- RakudoTutor -->
+  <h2 id="RakudoTutor-title">Lesson 1: Misc Stuff</h2>
+  <script type="text/javascript">
+   RakudoTutor.init();
+  </script>
+
+ </body>
+</html>

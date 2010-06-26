@@ -13,7 +13,7 @@ use Rakudo::Try::autoconnect qw(-create-session);
 
 print SESSION->header;
 
-open my $template, '<', join('/', ROOT_PATH, TEMPLATE_DIR, 'shell.html')
+open my $template, '<', join('/', ROOT_PATH, TEMPLATE_DIR, SHELL_TEMPLATE)
 	or SESSION->fail(500, 'Could not open template file');
 
 while(<$template>) {

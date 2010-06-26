@@ -14,6 +14,7 @@ BEGIN {
 	*::DB_USER = sub { $config{'db-user'} };
 	*::DB_PASS = sub { $config{'db-pass'} };
 	*::TEMPLATE_DIR = sub { $config{'template-dir'} };
+	*::SHELL_TEMPLATE = sub { $config{'shell-template'} }
 }
 
 sub import {
