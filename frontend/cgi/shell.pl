@@ -17,8 +17,15 @@ open my $template, '<', join('/', ROOT_PATH, TEMPLATE_DIR, SHELL_TEMPLATE)
 	or SESSION->fail(500, 'Could not open template file');
 
 while(<$template>) {
-	if(not /^\s*__RAKUDO_SHELL_OUT__\s*$/) { print; }
-	else {
+	if(not /__RAKUDO_SHELL_(\w+)__/) {
+		print;
+	}
+	elsif($1 eq 'ID') {
+		s/__RAKUDO_SHELL_ID__/${\(SESSION->id_string)}/;
+		print;
+	}
+	elsif($1 eq 'OUT') {
+		print '-->';
 		my $current = undef;
 		if(not SESSION->load_messages(0, \$current)) {
 			#TODO: error handling
@@ -29,6 +36,7 @@ while(<$template>) {
 
 		print $current, "\n" while SESSION->next_message;
 		SESSION->unload_messages;
+		print '<!--'."\n";
 	}
 }
 

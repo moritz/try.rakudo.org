@@ -133,6 +133,11 @@ sub has_query_string {
 	return (defined $ENV{QUERY_STRING} and length $ENV{QUERY_STRING}) ? 1 : '';
 }
 
+sub id_string {
+	my $self = shift;
+	return $self->encode_id($self->{id});
+}
+
 sub root {
 	my $self = shift;
 	return $self->{root};
