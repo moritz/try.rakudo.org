@@ -8,7 +8,7 @@
   <script type="text/javascript">
   google.load('jquery', '1.4');
   </script>
-  <script type="text/javascript" src="./jquery.scrollTo-1.4.2.js"></script>
+  <script type="text/javascript" src="../js/jquery.scrollTo-1.4.2.js"></script>
   <script>
     $(function () {
         var keywords = ['class', 'my', 'our', 'has', 'sub', 'method', 'submethod', 'module', 'role', 'package', 'token', 'grammar', 'augment', 'use'];
@@ -48,6 +48,12 @@
         };
         var error_tracker = false;
         var a = 0; // this is to cause a fake error every few calls
+        $("#stdin").keydown(function (evt) {
+            if (evt.keyCode == 9 && evt.shiftKey == false && evt.ctrlKey == false && evt.altKey == false && evt.metaKey == false) { // tab pressed
+                $("#stdin").val($("#stdin").val() + "    ");
+                evt.preventDefault();
+            }
+        });
         $("#stdin").keypress(function (evt) {
             if (evt.keyCode == 13 && evt.shiftKey == false) {
                 //$.getJSON("./test.js",
