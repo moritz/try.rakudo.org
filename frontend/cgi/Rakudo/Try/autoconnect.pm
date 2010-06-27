@@ -1,64 +1,70 @@
+package Rakudo::Try::autoconnect;
+
 use strict;
 use warnings;
 
-use Rakudo::Try::Session qw(new fail -errors);
+use Rakudo::Try::Session;
+use Rakudo::Try::config;
 
-use constant SESSION => Session::new(logging => LOGGING)
-	->connect(DB_SOURCE, DB_USER, DB_PASS, { PrintError => 0 });
+sub fail_msg { (shift)."\n".
+	'Try again later or bug someone on #perl6 at irc.freenode.net' }
+
+sub refresh_msg { (shift)."\n".
+	'You will shortly be redirected to a fresh session' }
+
+my $session;
 
 BEGIN {
-	Session::fail(undef, 503, 'Could not connect to database')
-		if not defined SESSION;
+	$session = Session_PROTO->clone->init;
+	$session->connect(DB_SOURCE, DB_USER, DB_PASS)
+		or $session->die(503, fail_msg('Could not connect to database'));
 }
 
-END { SESSION->disconnect if defined SESSION; }
-
-package Rakudo::Try::autoconnect;
-
-use constant SESSION => ::SESSION;
+END { $session->disconnect }
 
 my %actions = (
-	'-create-session' => \&create_session,
-	'-check-session' => \&check_session
+	':fail-on-EID' => sub {
+		$session->die(404, fail_msg('Illegal session-id'))
+			if $session->errno == Session_EID;
+	},
+
+	':refresh-on-EID' => sub {
+		$session->die(404, refresh_msg('Illegal session-id'),
+			-refresh => REFRESH_TIMEOUT.'; '.$session->root)
+			if $session->errno == Session_EID;
+	},
+
+	':create-session' => sub {
+		($session->create and $session->redirect('/')
+			or $session->die(500, fail_msg('Could not create session')))
+			if not $session->has_id;
+	},
+
+	':load-status' => sub {
+### TODO
+#	if(not defined SESSION->status(1)) {
+#		SESSION->fail(500, 'Could not read database')
+#			if SESSION->errno == Session::EDB;
+#
+#		SESSION_fail_404('Unknown session-id')
+#			if SESSION->errno == Session::EID;
+#
+#		SESSION->fail(500, 'Could not read session data due to an '.
+#			'unexpected error condition');
+#	}
+	}
 );
 
 sub import {
 	shift;
 	$actions{$_}->() for @_;
-};
 
-sub SESSION_fail_404 {
-	my $msg = shift;
-	SESSION->fail(404, 'Illegal session-id',
-		'You will shortly be redirected to a fresh session',
-		-refresh=>'5; '.SESSION->root)
-}
-
-sub check_session {
-	my $create_session = shift;
-
-	if(not SESSION->has_id) {
-		SESSION_fail_404('Illegal session-id')
-			if (SESSION->has_query_string or not $create_session);
-
-		(SESSION->create and SESSION->redirect('/'))
-			or SESSION->fail(500, 'Could not create session');
-	}
-
-	if(not defined SESSION->status(1)) {
-		SESSION->fail(500, 'Could not read database')
-			if SESSION->errno == Session::EDB;
-
-		SESSION_fail_404('Unknown session-id')
-			if SESSION->errno == Session::EID;
-
-		SESSION->fail(500, 'Could not read session data due to an '.
-			'unexpected error condition');
+	{
+		no strict 'refs';
+		*{(caller).'::SESSION'} = \&SESSION;
 	}
 }
 
-sub create_session {
-	check_session(1);
-}
+sub SESSION { $session }
 
 1;

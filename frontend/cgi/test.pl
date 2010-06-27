@@ -3,6 +3,6 @@
 use strict;
 use warnings;
 
-use u64 qw(hex64);
+use Rakudo::Try::config '../.config';
+use Rakudo::Try::autoconnect qw(:refresh-on-EID :create-session);
 
-print hex64('f3');
