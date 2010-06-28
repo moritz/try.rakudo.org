@@ -4,5 +4,5 @@ use strict;
 use warnings;
 
 use Rakudo::Try::config '../.config';
-use Rakudo::Try::autoconnect qw(:refresh-on-EID :create-session);
+use Rakudo::Try::autoconnect qw(:create-session);
 

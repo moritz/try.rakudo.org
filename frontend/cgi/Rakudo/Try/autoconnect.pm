@@ -6,6 +6,8 @@ use warnings;
 use Rakudo::Try::Session;
 use Rakudo::Try::config;
 
+our $VERSION = '0.01';
+
 sub fail_msg { (shift)."\n".
 	'Try again later or bug someone on #perl6 at irc.freenode.net' }
 
@@ -23,6 +25,22 @@ BEGIN {
 END { $session->disconnect }
 
 my %actions = (
+	':create-session' => sub {
+		$session->errno = 0;
+		($session->create and $session->redirect('/')
+			or $session->die(500, fail_msg('Could not create session')))
+			if not $session->has_id;
+	},
+
+	':load-status' => sub {
+		$session->die(400, fail_msg('Missing session-id'))
+			if not $session->has_id;
+		$session->errno = 0;
+		$session->die(500, fail_msg('Could not read session data'))
+			if (not defined $session->status(1) and
+				$session->errno != Session_EUNKNOWN);
+	},
+
 	':fail-on-EID' => sub {
 		$session->die(404, fail_msg('Illegal session-id'))
 			if $session->errno == Session_EID;
@@ -34,24 +52,15 @@ my %actions = (
 			if $session->errno == Session_EID;
 	},
 
-	':create-session' => sub {
-		($session->create and $session->redirect('/')
-			or $session->die(500, fail_msg('Could not create session')))
-			if not $session->has_id;
+	':fail-on-EUNKNOWN' => sub {
+		$session->die(404, fail_msg('Unknown session-id'))
+			if $session->errno == Session_EUNKNOWN;
 	},
 
-	':load-status' => sub {
-### TODO
-#	if(not defined SESSION->status(1)) {
-#		SESSION->fail(500, 'Could not read database')
-#			if SESSION->errno == Session::EDB;
-#
-#		SESSION_fail_404('Unknown session-id')
-#			if SESSION->errno == Session::EID;
-#
-#		SESSION->fail(500, 'Could not read session data due to an '.
-#			'unexpected error condition');
-#	}
+	':refresh-on-EUNKNOWN' => sub {
+		$session->die(404, refresh_msg('Unknown session-id'),
+			-refresh => REFRESH_TIMEOUT.'; '.$session->root)
+			if $session->errno == Session_EUNKNOWN;
 	}
 );
 
@@ -61,10 +70,10 @@ sub import {
 
 	{
 		no strict 'refs';
-		*{(caller).'::SESSION'} = \&SESSION;
+		*{(caller).'::Session'} = \&Session;
 	}
 }
 
-sub SESSION { $session }
+sub Session { $session }
 
 1;

@@ -5,6 +5,8 @@ use warnings;
 
 use File::Basename qw(dirname);
 
+our $VERSION = '0.01';
+
 my %config;
 
 sub import {
@@ -12,15 +14,15 @@ sub import {
 
 	{
 		no strict 'refs';
-		my $caller = (caller).'::';
-		*{$caller.'ROOT_PATH'} = \&ROOT_PATH;
-		*{$caller.'DB_SOURCE'} = \&DB_SOURCE;
-		*{$caller.'DB_USER'} = \&DB_USER;
-		*{$caller.'DB_PASS'} = \&DB_PASS;
-		*{$caller.'TEMPLATE_DIR'} = \&TEMPLATE_DIR;
-		*{$caller.'SHELL_TEMPLATE'} = \&SHELL_TEMPLATE;
-		*{$caller.'REFRESH_TIMEOUT'} = \&REFRESH_TIMEOUT;
-		*{$caller.'CONTROLLER_PORT'} = \&CONTROLLER_PORT;
+		my $caller = caller;
+		*{$caller.'::ROOT_PATH'} = \&ROOT_PATH;
+		*{$caller.'::DB_SOURCE'} = \&DB_SOURCE;
+		*{$caller.'::DB_USER'} = \&DB_USER;
+		*{$caller.'::DB_PASS'} = \&DB_PASS;
+		*{$caller.'::TEMPLATE_DIR'} = \&TEMPLATE_DIR;
+		*{$caller.'::SHELL_TEMPLATE'} = \&SHELL_TEMPLATE;
+		*{$caller.'::REFRESH_TIMEOUT'} = \&REFRESH_TIMEOUT;
+		*{$caller.'::CONTROLLER_PORT'} = \&CONTROLLER_PORT;
 	}
 
 	return if not defined $path;
