@@ -1,7 +1,5 @@
 body {
 	font-family: sans-serif;
-	max-width: 40em;
-	margin: 50px auto 3em auto;
 }
 
 h1 {
@@ -16,26 +14,40 @@ h1 img {
 	bottom: -80px;
 }
 
+pre {
+    margin: 0;
+}
+
 textarea {
 }
 
+#wrapper {
+    position: relative;
+    padding: 0 100px 0 0;
+    width: 40em;
+	margin: 50px auto 3em auto;
+}
+
 #camelia {
+    z-index: 2;
     position: absolute;
     top: -60px;
 }
 
 #content {
-    margin: 0 auto;
+    margin: 0 0 0 -60px;
+    padding: 0 10px 0;
+    color: #1C303E;
+    width: 634px;
     font-weight: bold;
     -moz-box-shadow: 5px 5px 10px #888;
     -webkit-box-shadow: 5px 5px 10px #888;
-    border: 0.2em solid #63a4ff;
-    background: #80b5ff;
+    border: 0.2em solid #4B7FA4;
+    background: #68B1E4;
     border-radius: 1em;
     -moz-border-radius: 1em;
     -webkit-border-radius: 1em;
     position: relative;
-    padding: 0em 0 0em 0;
 }
 
 #content textarea {
@@ -45,6 +57,25 @@ textarea {
 
 #content h1 {
     font-size: 24px;
+    text-shadow: 1px 1px 2px #8ECFFF;
+}
+
+#stdout {
+    border: 3px solid #1C303E;
+    border-bottom: none;
+    background: #274458;
+    color: #E1EFFF;
+    height: 300px;
+    overflow: auto;
+    padding: 3px 6px;
+    border-top-left-radius: 1em;
+    -moz-border-radius-topleft: 1em;
+    -webkit-border-top-left-radius: 1em;
+    border-top-right-radius: 1em;
+    -moz-border-radius-topright: 1em;
+    -webkit-border-top-right-radius: 1em;
+    -moz-box-shadow: 5px 5px 10px #8ECFFF;
+    -webkit-box-shadow: 5px 5px 10px #8ECFFF;
 }
 
 #stdout p {
@@ -62,24 +93,21 @@ textarea {
     border: 2px solid #eb0e20;
 }
 
-#stdout {
-    border: 3px solid black;
-    background: #274458;
-    color: #E1EFFF;
-    height: 300px;
-    overflow: auto;
-    padding: 3px 6px;
-}
-
 #stdin {
     font-size: 18px;
     font-weight: normal;
-    width: 577px;
+    width: 578px;
     position: relative;
-    border: 1px solid black;
+    border: 2px solid #1C303E;
+    border-right: none;
     background: white;
     resize: none;
     overflow: auto;
+    border-bottom-left-radius: 1em;
+    -moz-border-radius-bottomleft: 1em;
+    -webkit-border-bottom-left-radius: 1em;
+    -moz-box-shadow: 5px 5px 10px #8ECFFF;
+    -webkit-box-shadow: 5px 5px 10px #8ECFFF;
 }
 
 #stdin_form {
@@ -87,20 +115,87 @@ textarea {
 }
 
 #send_btn {
-    font-family: 'Courier New', Courier, monospace;
-    border: 2px solid #ccc;
+    z-index: 2;
+    margin: 0;
+    border: 2px solid #1C303E;
     width: 50px;
     text-align: center;
-    background: #bbb;
-    padding: 12px 0 10px 0;
+    background: #4B7FA4;
+    padding: 0;
     position: absolute;
     left: 580px;
+    height: 63px;
+    display: block;
+    border-bottom-right-radius: 1em;
+    -moz-border-radius-bottomright: 1em;
+    -webkit-border-bottom-right-radius: 1em;
+    -moz-box-shadow: 5px 5px 10px #8ECFFF;
+    -webkit-box-shadow: 5px 5px 10px #8ECFFF;
+}
+
+#send_btn span {
+    position: absolute;
+    top: 50%;
+    height: 38px;
+    margin: -19px 0 0 4px;
+    display: block;
+    color: #1C303E;
+    font-family: 'Courier New', Courier, monospace;
 }
 
 #send_btn.active {
-    background: #222;
+    background: #1C303E;
     border: 2px solid #111;
-    color: white;
+}
+
+#send_btn.active span {
+    background: #1C303E;
+    color: #A3C1D7;
+}
+
+#commands {
+    z-index: 1;
+    -moz-box-shadow: 5px 5px 10px #888;
+    -webkit-box-shadow: 5px 5px 10px #888;
+    border: 0.2em solid #F2C100;
+    border-left: none;
+    background: #F5EF7B;
+    border-top-right-radius: 1em;
+    border-bottom-right-radius: 1em;
+    -moz-border-radius-topright: 1em;
+    -moz-border-radius-bottomright: 1em;
+    -webkit-border-top-right-radius: 1em;
+    -webkit-border-bottom-rght-radius: 1em;
+    padding: 0 10px 0;
+    top: 200px;
+    width: 210px;
+    left: 600px;
+    position: absolute;
+}
+
+#commands h2 {
+    margin: 10px 0 3px;
+    padding: 0 10px 0 20px;
+}
+
+#commands small {
+    text-align: right;
+    width: 200px;
+    display: block;
+    color: #75713B;
+    font-size: .7em;
+}
+
+#commands ul {
+    padding: 0 0 0 10px;
+}
+
+#commands li p {
+    display: none;
+}
+
+#commands li:hover p {
+    display: block !important;
 }
 
 th {
