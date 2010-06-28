@@ -8,7 +8,7 @@
   <script type="text/javascript">
   google.load('jquery', '1.4');
   </script>
-  <script type="text/javascript" src="../js/jquery.scrollTo-1.4.2.js"></script>
+  <script type="text/javascript" src="/frontend/js/jquery.scrollTo-1.4.2.js"></script>
   <script>
     $(function () {
         var keywords = ['class', 'let', 'my', 'our', 'state', 'temp', 'has', 'constant', 'sub',
@@ -29,7 +29,6 @@
             $.each(constants, function (klass) {
                 text = text.replace(this[0], this[1]);
             });
-            
             text = text.replace(variables, '<b class="var">$1</b>');
             text = text.replace(new RegExp('\\b('+ keywords.join('|') +')(?!=)\\b', 'gm'), "<span class=\"keyword\">$1</span>");
             return text
@@ -48,16 +47,43 @@
                 result += "<p><span>&#x2192;</span>&nbsp;" + output + "</p>";
             }
             
-            
             return result;
         }
         
         function load_chapter(id) {
             $("#stdout").html("");
-            $("#feedback").text("Hello World, chapter "  + id);
+            $.getJSON('/frontend/data/chapters/index.js', function (data) {
+                $("#feedback").html($("<h1>").text(data.title));
+                if (data.steps) {
+                    
+                }
+                else if (data.info) {
+                    var list = $("<ul>");
+                    $("#feedback").append(list)
+                    for (var x in data.info) {
+                        var item = $("<li>").text(data.info[x].title);
+                        list.append(item);
+                        (function (item) {
+                            if (data.info[x].details) {
+                                var details = $("<ul>");
+                                details.hide();
+                                item.hover(function () {
+                                    details.show();
+                                }, function () {
+                                    details.hide();
+                                });
+                                item.append(details);
+                                for (var y in data.info[x].details) {
+                                    details.append($("<li>").text(data.info[x].details[y]));
+                                }
+                            }                            
+                        })(item);
+                    }
+                }
+            });
         }
         var commands = {
-            'chapter (\\d+)' : function (match) {
+            'chapter (\\d+|index)' : function (match) {
                 load_chapter(match[1]);
             },
             clear : function () {
@@ -72,19 +98,20 @@
                 evt.preventDefault();
             }
         });
+        
         function send() {
-            //$.getJSON("./test.js",
-            (function (result) {
-                $("#feedback").text(result.feedback + "a: " + a);
-                if (a == 3) {
-                    $("#stdout").append(format($("#stdin").val(), result.stdout, result.stderr));
-                    a = 0;
-                }
-                else {
-                    $("#stdout").append(format($("#stdin").val(), result.stdout));
-                }
-                $("#stdout").scrollTo($("#stdout p:last-child"), 300);
-                a++;
+            /* I am faking the call to getJSON for now, Although it doesn't have to be a 
+                JSON object, I am just using it as an example. */
+            /* $.getJSON("./test.js", */ (function (result) {
+                    if (a == 3) {
+                        $("#stdout").append(format($("#stdin").val(), result.stdout, result.stderr));
+                        a = 0;
+                    }
+                    else {
+                        $("#stdout").append(format($("#stdin").val(), result.stdout));
+                    }
+                    $("#stdout").scrollTo($("#stdout p:last-child"), 300);
+                    a++;
             })({"feedback": "Hello World",
             "stdout": "Result...",
             "stderr": "Fake Error: Confused at line 1, near \"a * 3\\n\""});
@@ -115,56 +142,68 @@
 
             var linecount = 0;
             $.each(str.split("\n"), function(k, l) {
-              linecount += Math.ceil( this.length / cols );
+              linecount += Math.ceil( (this.length + 1) / cols );
             });
             
             $(this).attr('rows', linecount < 3 ? 3 : linecount + 1);
+            $("#send_btn").height($(this).height());
         });
         
-        
+        $("#send_btn").height($("#stdin").height());
         $("#stdin").focus();
     });
   </script>
  </head>
  <body>
-    <div id="content">
-        <h1>Try Rakudo and Learn Perl 6 <img id="camelia" src="http://perl6.org/camelia-logo.png" /><br /><small>&#151; all in your browser</small></h1>
-        <div id="console">
-            <div>
-                <pre id="stdout"></pre>
+    <div id="wrapper">
+        <div id="content">
+            <h1>Try Rakudo and Learn Perl 6 <img id="camelia" src="http://perl6.org/camelia-logo.png" /><br /><small>&#151; all in your browser</small></h1>
+            <div id="console">
+                <div>
+                    <pre id="stdout"></pre>
+                </div>
+                <form id="stdin_form" action="try" method="post">
+                    <p id="send_btn"><span>&#x21A9;<br/>Send</span></p>
+                    <textarea id="stdin" cols="56" rows="3"></textarea>
+                </form>
             </div>
-            <form id="stdin_form" action="try" method="post">
-                <span id="send_btn">&#x21A9;<br/>Send</span>
-                <textarea id="stdin" cols="56" rows="3"></textarea>
-            </form>
-        </div>
 
-        <div id="feedback">
-            <p>
-                Please enter some code.
-            </p>
+            <div id="feedback">
+                <h1>Title</h1>
+                <p>
+                    Comments
+                </p>
+                <ul>
+                    <li>Steps</li>
+                </ul>
+            </div>
         </div>
         <div id="commands">
-            <p>
-                <strong>Commands List</strong>
-            </p>
-            <table>
-                <tr>
-                    <th>clear</th><td>- Resets the console.</td>
-                </tr>
-                <tr>
-                    <th>Shift+&#x21A9;</th><td>-New line in the text box</td>
-                </tr>
-                <tr>
-                    <th>chapter #</th><td>- Goes to chapter # of the tutorial.</td>
-                </tr>
-                <tr>
-                    <th>help /&lt;term&gt;/</th><td>- Looks up a term.</td>
-                </tr>
-                <tr>
-                    <th>links</th><td>- Some useful Links.</td>
-                </tr>
-            </table>
+            <h2>Commands List</h2>
+            <small>(hover for details)</small>
+            <ul>
+                <li>Tab
+                    <p>- Inserts 4 spaces.</p>
+                </li>
+                <li>Shift+&#x21A9;
+                    <p>- New line in the text box</p>
+                </li>
+                <li>clear
+                    <p>- Resets the console.</p>
+                </li>
+                <li>chapter index
+                    <p>- Lists an index of the tutorials.</p>
+                </li>
+                <li>chapter \d+
+                    <p>- Goes to chapter # of the tutorial, where # is a number.</p>
+                </li>
+                <li>help /&lt;term&gt;/
+                    <p>- Looks up a term.</p>
+                </li>
+                <li>links
+                    <p>- Some useful Links.</p>
+                </li>
+            </ul>
         </div>
     </div>
  </body>
