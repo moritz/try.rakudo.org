@@ -4,6 +4,7 @@ use strict;
 use warnings;
 
 use Rakudo::Try::config '../.config';
-use Rakudo::Try::autoconnect qw(:fail-on-EID :load-status :fail-on-EUNKNOWN);
+use Rakudo::Try::messages '../.messages';
+use Rakudo::Try::autoconnect qw(:short -EID load_status -EUNKNOWN);
 
 Session->die(200, Session->status);

@@ -1,4 +1,5 @@
-#NOTE: currently uses MySQL-specific features
+#NOTE: uses MySQL-specific features
+#TODO: backend interaction
 
 package Rakudo::Try::Session;
 
@@ -14,7 +15,6 @@ sub import {
 	no strict 'refs';
 	my $caller = caller;
 	*{$caller.'::Session_PROTO'} = \&PROTO;
-	*{$caller.'::Session_EOK'} = \&EOK;
 	*{$caller.'::Session_ECONNECT'} = \&ECONNECT;
 	*{$caller.'::Session_EDB'} = \&EDB;
 	*{$caller.'::Session_EID'} = \&EID;
@@ -22,7 +22,6 @@ sub import {
 	*{$caller.'::Session_ESTATE'} = \&ESTATE;
 }
 
-sub EOK 		{ 0 }
 sub ECONNECT	{ 1 }
 sub EDB			{ 2 }
 sub EID			{ 3 }
@@ -48,7 +47,7 @@ my $proto = bless {
 	root => undef,
 	db => undef,
 	status => undef,
-	errno => EOK,
+	errno => 0,
 	charset => 'utf-8',
 	id_encoder => sub {
 		my $_ = shift;
@@ -197,7 +196,6 @@ sub disconnect {
 	eval { $db->disconnect } or warn $db->errstr;
 }
 
-
 sub status {
 	my ($self, $update) = @_;
 	return $self->{status} if not $update;
@@ -213,18 +211,15 @@ sub status {
 		$select_status->bind_col(1, \$status);
 		$select_status->fetch;
 		$select_status->finish;
-		return defined $status;
+		return 1;
 	} or return $self->raise(EDB);
 
-	$self->{status} = $status;
-	return $status;
+	return $self->raise(EUNKNOWN) if not defined $status;
+	return $self->{status} = $status;
 }
-
-#TODO: create new backend instance
 
 sub create {
 	my $self = shift;
-
 	my $insert_session = $self->{statements}->{insert_session};
 	my $select_last_id = $self->{statements}->{select_last_id};
 
@@ -239,35 +234,37 @@ sub create {
 		return defined $id;
 	} or return $self->raise(EDB);
 
-	$self->{id} = $id;
-	return defined $id;
+	return $self->{id} = $id;
 }
 
-#TODO: re-implement
-#sub load_messages {
-#	#TODO: error handling
-#	my ($self, $seq_num, $contents_ref, $type_ref) = @_;
-#	my $stmt = $self->{messages_stmt};
-#	return eval {
-#		$stmt->execute($self->{id}, $seq_num);
-#		$stmt->bind_col(1, $contents_ref)
-#			if defined $contents_ref;
-#		$stmt->bind_col(2, $type_ref)
-#			if defined $type_ref;
-#		1;
-#	};
-#}
-#
-#sub next_message {
-#	#TODO: error handling
-#	my $self = shift;
-#	return $self->{messages_stmt}->fetch;
-#}
-#
-#sub unload_messages {
-#	#TODO: error handling
-#	my $self = shift;
-#	$self->{messages_stmt}->finish;
-#}
+sub load_messages {
+	my ($self, $seq_num, $contents_ref, $type_ref) = @_;
+	my $select_messages = $self->{statements}->{select_messages};
+
+	return (eval {
+		$select_messages->execute($self->{id}, $seq_num);
+		$select_messages->bind_col(1, $contents_ref)
+			if defined $contents_ref;
+		$select_messages->bind_col(2, $type_ref)
+			if defined $type_ref;
+		return 1;
+	} or $self->raise(EDB));
+}
+
+sub unload_messages {
+	# don't raise EDB as execution is finished
+	my $select_messages = shift->{statements}->{select_messages};
+	eval { $select_messages->finish } or warn $select_messages->errstr;
+}
+
+sub next_message {
+	my $self = shift;
+	my $res = undef;
+	eval {
+		$res = $self->{statements}->{select_messages}->fetch;
+		return 1;
+	} or return $self->raise(EDB);
+	return $res;
+}
 
 1;

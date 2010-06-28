@@ -4,8 +4,8 @@ use strict;
 use warnings;
 
 use Rakudo::Try::config '../.config';
-use Rakudo::Try::autoconnect qw(-refresh -check-session);
-use Rakudo::Try::Session qw(respond);
+use Rakudo::Try::messages '../.messages';
+use Rakudo::Try::autoconnect qw(:short -EID load_status -EUNKNOWN);
 
 #IDEA: return 204 if server is busy and one tries to send
 
@@ -23,12 +23,12 @@ use Rakudo::Try::Session qw(respond);
 # to /, which in turn reads the output from the DB.
 
 
-my $status = SESSION->status;
-my $has_js = SESSION->param('js');
-my $input = SESSION->param('input');
+my $status = Session->status;
+my $has_js = Session->param('js');
+my $input = Session->param('input');
 
 if($status ne 'a') {
-	SESSION->respond(204) if not $has_js;
+	Session->send_headers(204) if not $has_js;
 
 	#TODO: send different responses depending on status if JS available
 }
