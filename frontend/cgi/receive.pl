@@ -4,7 +4,8 @@ use strict;
 use warnings;
 
 use Rakudo::Try::config '../.config';
-use Rakudo::Try::autoconnect qw(-check-session);
+use Rakudo::Try::messages '../.messages';
+use Rakudo::Try::autoconnect qw(:short -EID load_status -EUNKNOWN);
 
 # This script gets new output from the DB if client-side scripting is available.
 # The expected request type is POST and the entity body should contain the id of

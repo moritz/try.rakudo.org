@@ -5,62 +5,60 @@ use warnings;
 
 use Rakudo::Try::Session;
 use Rakudo::Try::config;
+use Rakudo::Try::messages;
 
 our $VERSION = '0.01';
 
-sub fail_msg { (shift)."\n".
-	'Try again later or bug someone on #perl6 at irc.freenode.net' }
+my ($short, $refresh, $session);
 
-sub refresh_msg { (shift)."\n".
-	'You will shortly be redirected to a fresh session' }
+sub error {
+	my ($status, $msg) = @_;
+	$msg = $msg."\n".$MSG{error} if not $short;
+	$session->die($status, $msg);
+}
 
-my $session;
+sub fail {
+	my ($status, $msg) = @_;
+	my %headers;
+	$msg = $msg."\n".($refresh ? $MSG{refresh} : $MSG{fail}) if not $short;
+	$headers{'-refresh'} = REFRESH_TIMEOUT.'; '.$session->root if $refresh;
+	$session->die($status, $msg, %headers);
+}
 
 BEGIN {
+	($short, $refresh) = (0, 0);
 	$session = Session_PROTO->clone->init;
 	$session->connect(DB_SOURCE, DB_USER, DB_PASS)
-		or $session->die(503, fail_msg('Could not connect to database'));
+		or error(503, 'Could not connect to database');
 }
 
 END { $session->disconnect }
 
 my %actions = (
-	':create-session' => sub {
+	':short' => sub { $short = 1 },
+
+	':refresh' => sub { $refresh = 1 },
+
+	'-EID' => sub { fail(404, 'Illegal session-id')
+		if $session->errno == Session_EID },
+
+	'-EUNKNOWN' => sub { fail(404, 'Unknown session-id')
+		if $session->errno == Session_EUNKNOWN },
+
+	'create_session' => sub {
 		$session->errno = 0;
 		($session->create and $session->redirect('/')
-			or $session->die(500, fail_msg('Could not create session')))
+			or error(500, 'Could not create session'))
 			if not $session->has_id;
 	},
 
-	':load-status' => sub {
-		$session->die(400, fail_msg('Missing session-id'))
-			if not $session->has_id;
+	'load_status' => sub {
 		$session->errno = 0;
-		$session->die(500, fail_msg('Could not read session data'))
+		error(400, 'Missing session-id')
+			if not $session->has_id;
+		error(500, 'Could not read session data')
 			if (not defined $session->status(1) and
 				$session->errno != Session_EUNKNOWN);
-	},
-
-	':fail-on-EID' => sub {
-		$session->die(404, fail_msg('Illegal session-id'))
-			if $session->errno == Session_EID;
-	},
-
-	':refresh-on-EID' => sub {
-		$session->die(404, refresh_msg('Illegal session-id'),
-			-refresh => REFRESH_TIMEOUT.'; '.$session->root)
-			if $session->errno == Session_EID;
-	},
-
-	':fail-on-EUNKNOWN' => sub {
-		$session->die(404, fail_msg('Unknown session-id'))
-			if $session->errno == Session_EUNKNOWN;
-	},
-
-	':refresh-on-EUNKNOWN' => sub {
-		$session->die(404, refresh_msg('Unknown session-id'),
-			-refresh => REFRESH_TIMEOUT.'; '.$session->root)
-			if $session->errno == Session_EUNKNOWN;
 	}
 );
 
