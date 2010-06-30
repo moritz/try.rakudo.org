@@ -21,17 +21,21 @@
                         'of', 'returns', 'handles', 'where', 'augment', 'supersede', 'die', 'fail', 
                         'try', 'warn'];
         var variables = /([&%$@](?:[*^!?.])?(?:[a-zA-Z_][_a-zA-Z0-9:\-]*)?)/gm;
-        var constants = { str: [ /((?:'.*')|(?:".*"))(?!>)/gm, "<strong class=\"str\">$1</strong>" ],
+        var constants = { str: [ /((?:!=)(?:'.*')|(?:".*"))(?!>)/gm, "<strong class=\"str\">$1</strong>" ],
                           num: [ /\b(NaN|Inf|(?:0x[0-9a-f_]+)|(?:0b[01_]+)|(?:0d[0-9_]+)|(?:0o[0-7_]+)|(?:[0-9][0-9_]*(?:\.[0-9_]+)?))\b/igm, '<span class="num">$1</span>']
                          };
         
         function highlight(text) {
+            var html_entities = [[ /&/g, "&amp;"], [/</g, "&lt;"], [/>/g, "&gt;"], [/"/g, "&quot;"]];
+            $.each(html_entities, function () {
+                text = text.replace(this[0], this[1]);
+            });
             $.each(constants, function (klass) {
                 text = text.replace(this[0], this[1]);
             });
             text = text.replace(variables, '<b class="var">$1</b>');
             text = text.replace(new RegExp('\\b('+ keywords.join('|') +')(?!=)\\b', 'gm'), "<span class=\"keyword\">$1</span>");
-            return text
+            return text;
         }
         function format(input, output, error) {
             /* This function could be used for basic syntax highlighting. */
@@ -66,12 +70,6 @@
                         (function (item) {
                             if (data.info[x].details) {
                                 var details = $("<ul>");
-                                details.hide();
-                                item.hover(function () {
-                                    details.show();
-                                }, function () {
-                                    details.hide();
-                                });
                                 item.append(details);
                                 for (var y in data.info[x].details) {
                                     details.append($("<li>").text(data.info[x].details[y]));
@@ -183,25 +181,40 @@
             <small>(hover for details)</small>
             <ul>
                 <li>Tab
-                    <p>- Inserts 4 spaces.</p>
+                    <ul>
+                        <li>Inserts 4 spaces</li>
+                    </ul>
                 </li>
                 <li>Shift+&#x21A9;
-                    <p>- New line in the text box</p>
+                    <ul>
+                        <li>New line in the text box</li>
+                    </ul>
                 </li>
                 <li>clear
-                    <p>- Resets the console.</p>
+                    <ul>
+                        <li>Resets the console</li>
+                    </ul>
                 </li>
                 <li>chapter index
-                    <p>- Lists an index of the tutorials.</p>
+                    <ul>
+                        <li>Lists an index of the tutorials</li>
+                    </ul>
                 </li>
                 <li>chapter \d+
-                    <p>- Goes to chapter # of the tutorial, where # is a number.</p>
+                    <ul>
+                        <li>Goes to chapter # of the tutorial, where # is a number</li>
+                    </ul>
                 </li>
                 <li>help /&lt;term&gt;/
-                    <p>- Looks up a term.</p>
+                    <ul>
+                        <li>Looks up a term</li>
+                    </ul>
                 </li>
                 <li>links
-                    <p>- Some useful Links.</p>
+                    <ul>
+                        <li>Some useful Links</li>
+                        <li>Google is useful, right?</li>
+                    </ul>
                 </li>
             </ul>
         </div>

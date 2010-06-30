@@ -190,11 +190,12 @@ textarea {
     padding: 0 0 0 10px;
 }
 
-#commands li p {
+#commands li ul {
     display: none;
 }
 
-#commands li:hover p {
+#commands li:hover ul {
+    margin: 0;
     display: block !important;
 }
 
