@@ -1,43 +1,66 @@
-#!/opt/local/bin/perl
+#!/usr/bin/perl
+# Good practice? 
 use strict;
 use warnings;
-use v5.12;
 use mro 'c3';
-use feature 'say';
 
+# Web Requirements
 use Mojolicious::Lite;
 use Mojo::Server::CGI;
 use Mojo::JSON;
 
-use IPC::Run qw(harness pump finish timeout);
+# Requirements for running the commands
+use File::Temp qw(tempfile);
+use IPC::Run qw(run timeout);
 
 my $cgi = Mojo::Server::CGI->new;
 
-my @perl6 = '/Users/john/Projects/local/bin/perl6';
+my $perl6 = '/home/john/Projects/rakudo/parrot_install/bin/perl6'; 
+my $in_txt = '/home/john/Projects/try.rakudo.org/frontend/data/input_text.txt';
 
 get '/' => 'shell';
 
 get '/cmd' => sub {
     my $self = shift;
     my $result;
+    my ($fh, $filename);
     eval {
-        my ($p6in, $p6out, $p6err);
-        my $h = harness \@perl6, \$p6in, \$p6out, \$p6err, timeout( 10 );
-        my $in = $self->param('input');
-        $in =~ tr/\n/ /;
-        $p6in = $in;
+        my ($p6out, $p6err) = "";
+        ($fh, $filename) = tempfile();
         
-        pump $h while length $p6in;
-        finish $h;
+        # Stolen from pugs evalbot
+        print $fh q<
+module Safe { our sub forbidden(*@a, *%h) { die "Operation not permitted in safe mode" };
+    Q:PIR {
+        $P0 = get_hll_namespace
+        $P1 = get_hll_global ['Safe'], '&forbidden'
+        $P0['!qx']  = $P1
+        null $P1
+        set_hll_global ['IO'], 'Socket', $P1
+    }; };
+Q:PIR {
+    .local pmc s
+    s = get_hll_global ['Safe'], '&forbidden'
+    $P0 = getinterp
+    $P0 = $P0['outer';'lexpad';1]
+    $P0['&run'] = s
+    $P0['&open'] = s
+    $P0['&slurp'] = s
+    $P0['&unlink'] = s
+    $P0['&dir'] = s
+};
+# EVALBOT ARTIFACT
+>;
+        print $fh $self->param('input');
+        $fh->flush;
+        run ['cat', $in_txt], '|', [$perl6, $filename], '>&', \$p6out, timeout( 15 )
+            or die "perl6 died: $filename and $?";
         
-        $self->app->log->debug("string was: ". $in . ' and ' . length($in) + 2);
-        
-        $p6out = substr $p6out, length($in) + 2;
-        $p6out = substr $p6out, 0, length($p6out) - 2;
-        $p6out =~ s/^\s+//;
         chomp $p6out;
-        $result = $p6out . " "; # to keep it from thinking this is a number
+        $result = "$p6out"; # to keep it from thinking this is a number
+        close $fh;
     };
+    close $fh if $fh;
     if ($@) {
         return $self->render_json({error => 'yes' . $@});
     }
@@ -57,6 +80,7 @@ __DATA__
   <meta http-equiv="content-type" content="text/html; charset=UTF-8">
   <title>Try Rakudo and Learn Perl 6 -- all in your browser</title>
   <link rel="stylesheet" type="text/css" href="/markup/shell.css">
+  <link rel="shortcut icon" href="/fav.ico" />
   <script type="text/javascript" src="http://www.google.com/jsapi"></script>
   <script type="text/javascript">
   google.load('jquery', '1.4');
@@ -64,6 +88,7 @@ __DATA__
   <script type="text/javascript" src="/js/jquery.scrollTo-1.4.2.js"></script>
   <script>
     $(function () {
+        var history = ["", ""];
         var keywords = ['class', 'let', 'my', 'our', 'state', 'temp', 'has', 'constant', 'sub',
                         'method', 'submethod', 'module', 'role', 'package', 'token', 'grammar',
                         'augment', 'use', 'require', 'is', 'does', 'take', 'do', 'when', 'next',
@@ -94,9 +119,9 @@ __DATA__
         }
         function format(input, output, error) {
             /* This function could be used for basic syntax highlighting. */
-            input = highlight(input);
+            input = highlight(input.replace(/^\s*/, ""));
             if (output)
-                output = highlight(output);
+                output = highlight(output.replace(/^\s*/, ""));
             
             var result = "<p>" + input + "</p>";
             result += "<p><span>&#x2192;</span>&nbsp;" + output + "</p>";
@@ -156,17 +181,17 @@ __DATA__
         
         function send() {
             var input = $("#stdin").val();
-            $.getJSON('/cmd', "input=" + encodeURIComponent($("#stdin").val()),
+            $.getJSON('/cmd', "input=" + encodeURIComponent(history[0] + input),
                 function (result) {
                     if (result['error']) {
                         alert(result['error']);
                         return;
                     }
-                    if (result['stderr']) {
-                        $("#stdout").append(format(result.stdin, result.stdout, result.stderr));
-                    }
                     else {
-                        $("#stdout").append(format(result.stdin, result.stdout));
+                        history[0] += input;
+                        result.stdout = result.stdout + "";
+                        $("#stdout").append(format(input, result.stdout.replace(history[1], "")));
+                        history[1] += result.stdout.replace(history[1], "");
                     }
                     $("#stdout").scrollTo($("#stdout p:last-child"), 300);
                 }
@@ -294,8 +319,3 @@ __DATA__
  </script>
 </html>
 
-@@ layouts/funky.html.ep
-<!doctype html><html>
-    <head><title>Funky!</title></head>
-    <body><%== content %></body>
-</html>
