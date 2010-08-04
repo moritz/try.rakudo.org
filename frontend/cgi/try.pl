@@ -3,6 +3,7 @@
 use strict;
 use warnings;
 use mro 'c3';
+use encoding 'utf8';
 
 # Web Requirements
 use Mojolicious::Lite;
@@ -50,6 +51,7 @@ Q:PIR {
     $P0['&dir'] = s
 };
 # EVALBOT ARTIFACT
+use FORBID_PIR;
 >;
         print $fh $self->param('input');
         $fh->flush;
@@ -79,8 +81,8 @@ __DATA__
  <head>
   <meta http-equiv="content-type" content="text/html; charset=UTF-8">
   <title>Try Rakudo and Learn Perl 6 -- all in your browser</title>
-  <link rel="stylesheet" type="text/css" href="/markup/shell.css">
-  <link rel="shortcut icon" href="/fav.ico" />
+  <link rel="stylesheet" type="text/css" href="/styles/shell.css">
+  <link rel="shortcut icon" href="/images/fav.ico" />
   <script type="text/javascript" src="http://www.google.com/jsapi"></script>
   <script type="text/javascript">
   google.load('jquery', '1.4');
@@ -163,6 +165,10 @@ __DATA__
             });
         }
         var commands = {
+            help : function () {
+                $("#feedback").html($("#help").html());
+                return true;
+            },
             'chapter (\\d+|index)' : function (match) {
                 load_chapter(match[1]);
             },
@@ -179,10 +185,39 @@ __DATA__
             }
         });
         
+        var send_enabled = true;
+        
+        function loading() {
+            send_enabled = false;
+            $("#console").addClass('loading');
+            $("#console").append($('<div id="loading">').html("<img src=\"/images/ajax-loader.gif\" alt=\"Loading...\" class=\"loading_icon\" />"));
+        }
+        
+        function done_loading() {
+            send_enabled = true;
+            $("#console").removeClass('loading');
+            $("#console #loading").remove();
+        }
+        
         function send() {
+            if (send_enabled == false) return;
+            
+            var done = false; 
+            $.each(commands, function (k, v) {
+                var match;
+                if (match = new RegExp(k, 'gmi').exec($("#stdin").val())) {
+                    done = done || v(match);
+                }
+            });
+            
+            if (done) return;
+            
+            loading();
             var input = $("#stdin").val();
+            if (input[input.length - 1] != ';') input += ';';
             $.getJSON('/cmd', "input=" + encodeURIComponent(history[0] + input),
                 function (result) {
+                    done_loading();
                     if (result['error']) {
                         alert(result['error']);
                         return;
@@ -196,13 +231,6 @@ __DATA__
                     $("#stdout").scrollTo($("#stdout p:last-child"), 300);
                 }
             );
-            
-            $.each(commands, function (k, v) {
-                var match;
-                if (match = new RegExp(k, 'gmi').exec($("#stdin").val())) {
-                    v(match);
-                }
-            });
             
             $("#stdin").val("");
         }
@@ -230,6 +258,7 @@ __DATA__
             $("#send_btn").height($(this).height());
         });
         
+        $("#feedback").html($("#help").html());
         $("#send_btn").height($("#stdin").height());
         $("#stdin").focus();
     });
@@ -251,57 +280,65 @@ __DATA__
             </div>
 
             <div id="feedback">
-                <h1>Welcome</h1>
-                <p>
-                    Welcome statement
-                </p>
-                <h2>Commands List</h2>
-                <ul>
-                    <li>Tab
-                        <ul>
-                            <li>Inserts 4 spaces</li>
-                        </ul>
-                    </li>
-                    <li>Shift+&#x21A9;
-                        <ul>
-                            <li>New line in the text box</li>
-                        </ul>
-                    </li>
-                    <li>clear
-                        <ul>
-                            <li>Resets the console</li>
-                        </ul>
-                    </li>
-                    <li>chapter index
-                        <ul>
-                            <li>Lists an index of the tutorials</li>
-                        </ul>
-                    </li>
-                    <li>chapter \d+
-                        <ul>
-                            <li>Goes to chapter # of the tutorial, where # is a number</li>
-                        </ul>
-                    </li>
-                    <li>help /&lt;term&gt;/
-                        <ul>
-                            <li>Looks up a term</li>
-                        </ul>
-                    </li>
-                    <li>links
-                        <ul>
-                            <li><a href="#">Some</a> useful Links</li>
-                            <li><a href="https://www.google.com">Google is useful, right?</a></li>
-                        </ul>
-                    </li>
-                </ul>
             </div>
             <div id="footer">
-                Footer Goes Here
+                Content, content and content.
             </div>
         </div>
         <div id="abs_footer">
-            <p>Abs Footer</p>
+            <p>Made possible by the guys that brought you Rakudo.</p>
         </div>
+    </div>
+    
+    <div id="hidden">
+        <div id="help">
+            <h1>Welcome</h1>
+            <h2>Commands List</h2>
+            <ul>
+                <li>help
+                    <ul>
+                        <li>Displays this message.</li>
+                    </ul>
+                </li>
+                <li>Tab
+                    <ul>
+                        <li>Inserts 4 spaces</li>
+                    </ul>
+                </li>
+                <li>Shift+&#x21A9;
+                    <ul>
+                        <li>New line in the text box</li>
+                    </ul>
+                </li>
+                <li>clear
+                    <ul>
+                        <li>Resets the console</li>
+                    </ul>
+                </li>
+                <li>chapter index
+                    <ul>
+                        <li>Lists an index of the tutorials</li>
+                    </ul>
+                </li>
+                <li>chapter \d+
+                    <ul>
+                        <li>Goes to chapter # of the tutorial, where # is a number</li>
+                    </ul>
+                </li>
+                <li>help /&lt;term&gt;/
+                    <ul>
+                        <li>Looks up a term</li>
+                    </ul>
+                </li>
+                <li>links
+                    <ul>
+                        <li><a href="#">Some</a> useful Links</li>
+                        <li><a href="https://www.google.com">Google is useful, right?</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+        <img src="/images/ajax-loader.gif" alt="Loading..." class="loading_icon" />
     </div>
  </body>
  <script type="text/javascript">

@@ -65,6 +65,10 @@ textarea {
     text-shadow: 1px 1px 2px #8ECFFF;
 }
 
+#console {
+    position: relative;
+}
+
 #stdout {
     border: 3px solid #1C303E;
     border-bottom: none;
@@ -101,7 +105,7 @@ textarea {
 #stdin {
     font-size: 18px;
     font-weight: normal;
-    width: 578px;
+    width: 678px;
     position: relative;
     border: 2px solid #1C303E;
     border-right: none;
@@ -128,7 +132,7 @@ textarea {
     background: #4B7FA4;
     padding: 0;
     position: absolute;
-    left: 580px;
+    left: 680px;
     height: 63px;
     display: block;
     border-bottom-right-radius: 1em;
@@ -226,4 +230,15 @@ th {
 
 .list {
     color: #0f0;
+}
+
+#hidden {
+    display: none; 
+    visibility: none;
+}
+
+#loading {
+    position: absolute;
+    top: 320px;
+    left: 248px;
 }
