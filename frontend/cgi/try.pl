@@ -19,12 +19,12 @@ my $cgi = Mojo::Server::CGI->new;
 my $perl6 = '/home/ash/Projects/rakudo/parrot_install/bin/perl6'; 
 my $in_txt = '/home/ash/Projects/try.rakudo.org/frontend/data/input_text.txt';
 
-get '/' => sub {
+get '/shell' => sub {
     my $self = shift;
-    return $self->redirect_to('http://try.rakudo.org/index.html'); 
+    return $self->redirect_to('http://try.rakudo.org/'); 
 };
 
-get '/shell' => sub {
+get '/' => sub {
     my $self = shift;
     my $txt = $self->param('input');
     return $self->render(template => 'shell', txt => $txt);
@@ -90,7 +90,7 @@ __DATA__
 <html lang="en-US" xml:lang="en-US" xmlns="http://www.w3.org/1999/xhtml"> 
  <head>
   <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
-  <title>Try Rakudo and Learn Perl 6 -- all in your browser</title>
+  <title>Try Rakudo and Learn Perl 6 -- all in your browser (Beta)</title>
   <link rel="stylesheet" type="text/css" href="/styles/shell.css" />
   <link rel="shortcut icon" type="image/x-icon" href="/images/fav.ico" />
   <script type="text/javascript" src="http://www.google.com/jsapi"></script>
@@ -103,7 +103,7 @@ __DATA__
  <body>
     <div id="wrapper">
         <div id="content">
-            <h1>Try Rakudo and Learn Perl 6 <img id="camelia" alt="Camelia" src="http://perl6.org/camelia-logo.png" /><br /><small>&mdash; all in your browser</small></h1>
+            <h1>Try Rakudo and Learn Perl 6 (Beta) <img id="camelia" alt="Camelia" src="http://perl6.org/camelia-logo.png" /><br /><small>&mdash; all in your browser</small></h1>
             <div id="console">
                 <div>
                     <pre id="stdout"></pre>
