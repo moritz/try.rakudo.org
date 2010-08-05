@@ -85,13 +85,14 @@ $cgi->run;
 __DATA__
 
 @@ shell.html.ep
-<!DOCTYPE html>
-<html>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" 
+	"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html lang="en-US" xml:lang="en-US" xmlns="http://www.w3.org/1999/xhtml"> 
  <head>
-  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
   <title>Try Rakudo and Learn Perl 6 -- all in your browser</title>
-  <link rel="stylesheet" type="text/css" href="/styles/shell.css">
-  <link rel="shortcut icon" href="/images/fav.ico" />
+  <link rel="stylesheet" type="text/css" href="/styles/shell.css" />
+  <link rel="shortcut icon" type="image/x-icon" href="/images/fav.ico" />
   <script type="text/javascript" src="http://www.google.com/jsapi"></script>
   <script type="text/javascript">
   google.load('jquery', '1.4');
@@ -109,7 +110,9 @@ __DATA__
                 </div>
                 <form id="stdin_form" action="try" method="post">
                     <p id="send_btn"><span>&#x21A9;<br/>Send</span></p>
-                    <textarea id="stdin" cols="56" rows="3"><%= $txt %></textarea>
+                    <div>
+                      <textarea id="stdin" cols="56" rows="3"><%= $txt %></textarea>
+                    </div>
                 </form>
             </div>
 
@@ -174,17 +177,6 @@ __DATA__
         </div>
         <img src="/images/ajax-loader.gif" alt="Loading..." class="loading_icon" />
     </div>
-   <script type="text/javascript">
-    var _gaq = _gaq || [];
-    _gaq.push(['_setAccount', 'UA-10145968-1']);
-    _gaq.push(['_trackPageview']);
-
-    (function() {
-      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
-    })();
-   </script>
  </body>
 </html>
 
