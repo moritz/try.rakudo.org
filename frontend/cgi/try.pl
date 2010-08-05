@@ -123,7 +123,7 @@ __DATA__
             </div>
         </div>
         <div id="abs_footer">
-            <p>Made possible by the guys that brought you Rakudo.</p>
+            <p>Made possible by the folks that brought you Rakudo.</p>
         </div>
     </div>
     
