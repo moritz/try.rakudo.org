@@ -19,12 +19,12 @@ my $cgi = Mojo::Server::CGI->new;
 my $perl6 = '/home/ash/Projects/rakudo/parrot_install/bin/perl6'; 
 my $in_txt = '/home/ash/Projects/try.rakudo.org/frontend/data/input_text.txt';
 
-get '/' => sub {
+get '/shell' => sub {
     my $self = shift;
-    return $self->redirect_to('http://try.rakudo.org/index.html'); 
+    return $self->redirect_to('http://try.rakudo.org/'); 
 };
 
-get '/shell' => sub {
+get '/' => sub {
     my $self = shift;
     my $txt = $self->param('input');
     return $self->render(template => 'shell', txt => $txt);
@@ -85,13 +85,14 @@ $cgi->run;
 __DATA__
 
 @@ shell.html.ep
-<!DOCTYPE html>
-<html>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" 
+	"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html lang="en-US" xml:lang="en-US" xmlns="http://www.w3.org/1999/xhtml"> 
  <head>
-  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-  <title>Try Rakudo and Learn Perl 6 -- all in your browser</title>
-  <link rel="stylesheet" type="text/css" href="/styles/shell.css">
-  <link rel="shortcut icon" href="/images/fav.ico" />
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+  <title>Try Rakudo and Learn Perl 6 -- all in your browser (Beta)</title>
+  <link rel="stylesheet" type="text/css" href="/styles/shell.css" />
+  <link rel="shortcut icon" type="image/x-icon" href="/images/fav.ico" />
   <script type="text/javascript" src="http://www.google.com/jsapi"></script>
   <script type="text/javascript">
   google.load('jquery', '1.4');
@@ -102,14 +103,16 @@ __DATA__
  <body>
     <div id="wrapper">
         <div id="content">
-            <h1>Try Rakudo and Learn Perl 6 <img id="camelia" alt="Camelia" src="http://perl6.org/camelia-logo.png" /><br /><small>&mdash; all in your browser</small></h1>
+            <h1>Try Rakudo and Learn Perl 6 (Beta) <img id="camelia" alt="Camelia" src="http://perl6.org/camelia-logo.png" /><br /><small>&mdash; all in your browser</small></h1>
             <div id="console">
                 <div>
                     <pre id="stdout"></pre>
                 </div>
                 <form id="stdin_form" action="try" method="post">
                     <p id="send_btn"><span>&#x21A9;<br/>Send</span></p>
-                    <textarea id="stdin" cols="56" rows="3"><%= $txt %></textarea>
+                    <div>
+                      <textarea id="stdin" cols="56" rows="3"><%= $txt %></textarea>
+                    </div>
                 </form>
             </div>
 
@@ -120,7 +123,7 @@ __DATA__
             </div>
         </div>
         <div id="abs_footer">
-            <p>Made possible by the guys that brought you Rakudo.</p>
+            <p>Made possible by the folks that brought you Rakudo.</p>
         </div>
     </div>
     
@@ -174,17 +177,6 @@ __DATA__
         </div>
         <img src="/images/ajax-loader.gif" alt="Loading..." class="loading_icon" />
     </div>
-   <script type="text/javascript">
-    var _gaq = _gaq || [];
-    _gaq.push(['_setAccount', 'UA-10145968-1']);
-    _gaq.push(['_trackPageview']);
-
-    (function() {
-      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
-    })();
-   </script>
  </body>
 </html>
 
