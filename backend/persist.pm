@@ -14,45 +14,36 @@ my $perl6 = '/Users/john/Projects/rakudo/parrot_install/bin/perl6';
     use Moose;
     use IPC::Run qw(harness timeout kill_kill);
     
-    has 'p6interp' => (is => 'rw');
-    
     sub BUILD {
         my ($self) = @_;
         
         $self->{in} = $self->{out} = $self->{err} = '';
         
-        my $in = q<
-my $*ARGFILES = open '/Users/john/Projects/try.rakudo.org/frontend/data/input_text.txt';
-module Safe { 
-    our sub forbidden(*@a, *%h) { die "Operation not permitted in safe mode" };
-    &GLOBAL::open   := &forbidden;
-    &GLOBAL::run    := &forbidden;
-    &GLOBAL::slurp  := &forbidden;
-    &GLOBAL::unlink := &forbidden;
-    &GLOBAL::dir    := &forbidden;
-    # Add Socket;
-    Q:PIR {
-        $P0 = get_hll_namespace
-        $P1 = get_hll_global ['Safe'], '&forbidden'
-        $P0['!qx']  = $P1
-        null $P1
-        set_hll_global ['IO'], 'Socket', $P1
-    }; };
-}
-use FORBID_PIR;
->;
+        # my $in = q<my $*ARGFILES = open '/Users/john/Projects/try.rakudo.org/frontend/data/input_text.txt'; module Safe { our sub forbidden(*@a, *%h) { die "Operation not permitted in safe mode" }; &GLOBAL::open := &forbidden; &GLOBAL::run := &forbidden; &GLOBAL::slurp := &forbidden; &GLOBAL::unlink := &forbidden; &GLOBAL::dir := &forbidden; }; use FORBID_PIR;>;
+#     # Add Socket;
+#     Q:PIR {
+#         $P0 = get_hll_namespace
+#         $P1 = get_hll_global ['Safe'], '&forbidden'
+#         $P0['!qx']  = $P1
+#         null $P1
+#         set_hll_global ['IO'], 'Socket', $P1
+#     }; };
+# }
+#>;
         $self->{timer} = timeout 15;
         
         my $h;
         eval {
-            $h = harness [$perl6], \$self->{in}, \$self->{out}, \$self->{err}, $self->{timer}
+            $h = harness [$perl6], \$self->{in}, \$self->{out}, $self->{timer}
                 or die "perl6 died: $?";
             
             $self->{p6interp} = \$h;
+            # $self->{in} = $in;
+            
             $h->start;
-            $h->pump until ! length $self->{in};
-
-            $h->pump until $self->{out} =~ /\n>\s/;
+            $self->{timer}->start( 15 );
+            
+            $h->pump until $self->{out} =~ />\s/m;
             $self->{out} = '';
         };
         if ( $@ ) {
@@ -61,6 +52,8 @@ use FORBID_PIR;
                        ## brutally on Win32.
             die $x;
         }
+        
+        warn 'made a new p6interp';
         # $self->{in} = q<my $*ARGFILES = open '/Users/john/Projects/try.rakudo.org/frontend/data/input_text.txt';>;
     }
     
@@ -88,7 +81,6 @@ use FORBID_PIR;
         $self->{out} = '';
         
         $result =~ s/\n>\s//m;
-        
         
         return $result;
     }
@@ -185,22 +177,24 @@ sub spawn {
 # buffered reading and writing on an unbuffered socket.
 sub server_session_start {
     my ($heap, $socket) = @_[HEAP, ARG0];
-    warn 'test';
-    $heap->{client} = POE::Wheel::ReadWrite->new(
-        Handle     => $socket,
-        InputEvent => 'got_client_input',
-        ErrorEvent => 'got_client_error',
-    );
-    $heap->{interp} = P6Interp->new;
+    eval {
+        $heap->{client} = POE::Wheel::ReadWrite->new(
+            Handle     => $socket,
+            InputEvent => 'got_client_input',
+            ErrorEvent => 'got_client_error',
+        );
+        $heap->{interp} = P6Interp->new;
+    };
+    if ( $@ ) {
+        $heap->{client}->put("Failed to initialize the rakudo.\n$@");
+    }
 }
 
 # The server session received some input from its attached client.
 # Echo it back.
 sub server_session_input {
     my ($heap, $input) = @_[HEAP, ARG0];
-    warn 'b';
     eval {
-        $heap->{client}->put("testing...");
         my $result = $heap->{interp}->send($input);
         $heap->{client}->put($result);
     };
@@ -217,7 +211,7 @@ sub server_session_error {
     $error = "Normal disconnection." unless $errno;
     warn "Server session encountered $syscall error $errno: $error\n";
  
-    $heap->{interp}->stop() if ($heap->{interp});
+    $heap->{interp}->stop() if $heap->{interp};
 
     delete $heap->{client};
 }

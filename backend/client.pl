@@ -102,7 +102,7 @@ sub socket_input {
 sub socket_error {
   my ($heap, $syscall, $errno, $error) = @_[HEAP, ARG0 .. ARG2];
   $error = "Normal disconnection." unless $errno;
-  warn "Client socket encountered $syscall error $errno: $error\n";
+  warn "Client socket encountered $syscall error $errno: $error\n\n";
   delete $heap->{connect_wheel};
   delete $heap->{io_wheel};
   delete $heap->{cli_wheel};
@@ -121,8 +121,7 @@ sub socket_error {
 sub console_input {
   my ($heap, $input, $exception) = @_[HEAP, ARG0, ARG1];
   if (defined $input) {
-    $heap->{cli_wheel}->addhistory($input);
-    $heap->{cli_wheel}->put("You Said: $input");
+    # $heap->{cli_wheel}->addhistory($input);
     $heap->{io_wheel}->put($input);
   }
   elsif ($exception eq 'cancel') {
