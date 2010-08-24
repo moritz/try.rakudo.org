@@ -16,8 +16,8 @@ use IPC::Run qw(run timeout);
 
 my $cgi = Mojo::Server::CGI->new;
 
-my $perl6 = '/home/ash/Projects/rakudo/parrot_install/bin/perl6'; 
-my $in_txt = '/home/ash/Projects/try.rakudo.org/frontend/data/input_text.txt';
+my $perl6 = '/Users/john/Projects/rakudo/parrot_install/bin/perl6'; 
+my $in_txt = '/Users/john/Projects/try.rakudo.org/frontend/data/input_text.txt';
 
 get '/shell' => sub {
     my $self = shift;
@@ -33,45 +33,10 @@ get '/' => sub {
 get '/cmd' => sub {
     my $self = shift;
     my $result;
-    my ($fh, $filename);
     eval {
-        my ($p6out, $p6err) = "";
-        ($fh, $filename) = tempfile();
-        
-        # Stolen from pugs evalbot
-        print $fh q<
-module Safe { our sub forbidden(*@a, *%h) { die "Operation not permitted in safe mode" };
-    Q:PIR {
-        $P0 = get_hll_namespace
-        $P1 = get_hll_global ['Safe'], '&forbidden'
-        $P0['!qx']  = $P1
-        null $P1
-        set_hll_global ['IO'], 'Socket', $P1
-    }; };
-Q:PIR {
-    .local pmc s
-    s = get_hll_global ['Safe'], '&forbidden'
-    $P0 = getinterp
-    $P0 = $P0['outer';'lexpad';1]
-    $P0['&run'] = s
-    $P0['&open'] = s
-    $P0['&slurp'] = s
-    $P0['&unlink'] = s
-    $P0['&dir'] = s
-};
-# EVALBOT ARTIFACT
-use FORBID_PIR;
->;
-        print $fh $self->param('input');
-        $fh->flush;
-        run ['cat', $in_txt], '|', [$perl6, $filename], '>&', \$p6out, timeout( 15 )
-            or die "perl6 died: $filename and $?";
-        
-        chomp $p6out;
-        $result = "$p6out"; # to keep it from thinking this is a number
-        close $fh;
+        socket 
+        $self->param('stdin');
     };
-    close $fh if $fh;
     if ($@) {
         return $self->render_json({error => 'yes' . $@});
     }

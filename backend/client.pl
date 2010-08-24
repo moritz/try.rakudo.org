@@ -32,6 +32,8 @@ POE::Session->create(
   },
 );
 
+my $id = int(rand(100));
+
 # Run the client until it is finished, then exit because we're done.
 # The rest of this program consists of event handlers.
 $poe_kernel->run();
@@ -76,6 +78,7 @@ sub socket_connected {
     InputEvent => 'sock_input',
     ErrorEvent => 'sock_error',
   );
+  print "My id is: $id\n";
   $heap->{cli_wheel} = POE::Wheel::ReadLine->new(InputEvent => 'cli_input');
   $heap->{cli_wheel}->get("=> ");
 }
@@ -122,7 +125,7 @@ sub console_input {
   my ($heap, $input, $exception) = @_[HEAP, ARG0, ARG1];
   if (defined $input) {
     # $heap->{cli_wheel}->addhistory($input);
-    $heap->{io_wheel}->put($input);
+    $heap->{io_wheel}->put("id<$id> $input");
   }
   elsif ($exception eq 'cancel') {
     $heap->{cli_wheel}->put("Canceled.");

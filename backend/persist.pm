@@ -11,11 +11,12 @@ my $perl6 = '/Users/john/Projects/rakudo/parrot_install/bin/perl6';
 
 {    
     package P6Interp;
-    use Moose;
     use IPC::Run qw(harness timeout kill_kill);
     
-    sub BUILD {
-        my ($self) = @_;
+    sub new {
+        my $proto = shift;
+        my $class = ref($proto) || $proto;
+        my $self  = {};
         
         $self->{in} = $self->{out} = $self->{err} = '';
         
@@ -55,6 +56,9 @@ my $perl6 = '/Users/john/Projects/rakudo/parrot_install/bin/perl6';
         
         warn 'made a new p6interp';
         # $self->{in} = q<my $*ARGFILES = open '/Users/john/Projects/try.rakudo.org/frontend/data/input_text.txt';>;
+        
+        bless ($self, $class);
+        return $self;
     }
     
     sub gather_result {
@@ -104,6 +108,8 @@ package Server;
 use POE::Session;    # For KERNEL, HEAP, etc.
 use Socket;          # For PF_UNIX.
 
+our $storage = {};
+
 # Spawn a UNIX socket server at a particular rendezvous.  jinzougen
 # says "rendezvous" is a UNIX socket term for the inode where clients
 # and servers get together.  Note that this is NOT A POE EVENT
@@ -117,6 +123,16 @@ sub spawn {
             got_error  => \&server_error,
         },
         heap => {rendezvous => $rendezvous,},
+    );
+    
+    POE::Component::Server::TCP->new(
+      Alias       => "echo_server",
+      Port        => 11211,
+      ClientInput => sub {
+        my ($session, $heap, $input) = @_[SESSION, HEAP, ARG0];
+        print "Session ", $session->ID(), " got input: $input\n";
+        $heap->{client}->put($input);
+      }
     );
 }
 
@@ -177,17 +193,11 @@ sub spawn {
 # buffered reading and writing on an unbuffered socket.
 sub server_session_start {
     my ($heap, $socket) = @_[HEAP, ARG0];
-    eval {
-        $heap->{client} = POE::Wheel::ReadWrite->new(
-            Handle     => $socket,
-            InputEvent => 'got_client_input',
-            ErrorEvent => 'got_client_error',
-        );
-        $heap->{interp} = P6Interp->new;
-    };
-    if ( $@ ) {
-        $heap->{client}->put("Failed to initialize the rakudo.\n$@");
-    }
+    $heap->{client} = POE::Wheel::ReadWrite->new(
+        Handle     => $socket,
+        InputEvent => 'got_client_input',
+        ErrorEvent => 'got_client_error',
+    );
 }
 
 # The server session received some input from its attached client.
@@ -195,8 +205,17 @@ sub server_session_start {
 sub server_session_input {
     my ($heap, $input) = @_[HEAP, ARG0];
     eval {
-        my $result = $heap->{interp}->send($input);
-        $heap->{client}->put($result);
+        my $ssid;
+        $input =~ /id<(\d+)>/m;
+        $ssid = $1;
+        $input =~ s/id<(\d+)>\s//m;
+        unless ($Server::storage->{$ssid}) {
+            $Server::storage->{$ssid} = P6Interp->new;
+        }
+        if ($input) {
+            my $result = $Server::storage->{$ssid}->send($input);
+            $heap->{client}->put($result);
+        }
     };
     if ( $@ ) {
         $heap->{client}->put("ERROR: $@");
@@ -210,8 +229,8 @@ sub server_session_error {
     my ($heap, $syscall, $errno, $error) = @_[HEAP, ARG0 .. ARG2];
     $error = "Normal disconnection." unless $errno;
     warn "Server session encountered $syscall error $errno: $error\n";
- 
-    $heap->{interp}->stop() if $heap->{interp};
+
+    $Server::storage->{$_[SENDER]->ID}->stop() if $Server::storage->{$_[SENDER]->ID};
 
     delete $heap->{client};
 }
