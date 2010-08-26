@@ -9,6 +9,7 @@ use encoding 'utf8';
 use Mojolicious::Lite;
 use Mojo::Server::CGI;
 use Mojo::JSON;
+use IO::Socket;
 
 # Requirements for running the commands
 use File::Temp qw(tempfile);
@@ -33,10 +34,30 @@ get '/' => sub {
 get '/cmd' => sub {
     my $self = shift;
     my $result;
+    my $remote = IO::Socket::INET->new(
+            Proto    => "tcp",
+            PeerAddr => "localhost",
+            PeerPort => 11211)
+        or die "cannot connect to daytime port at localhost";
+    $remote->autoflush(1);
     eval {
-        socket 
-        $self->param('stdin');
+        my $input = $self->param('stdin');
+        
+        print $remote "id<$id> $input\n";
+
+        my $done = 0;
+        while (!$done) {
+            my $tmp = $remote->getline;
+            if ($tmp =~ /^=>/) {
+                $done = 1;
+            }
+            else {
+                $result .= $tmp;
+            }
+        }
+        
     };
+    close $remote;
     if ($@) {
         return $self->render_json({error => 'yes' . $@});
     }
