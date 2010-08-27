@@ -119,7 +119,7 @@ __DATA__
             <div id="feedback">
             </div>
             <div id="footer">
-                Content, content and content.
+                <!-- Content, content and content. -->
             </div>
         </div>
         <div id="abs_footer">
@@ -152,7 +152,8 @@ __DATA__
                         <li>Resets the console</li>
                     </ul>
                 </li>
-                <li>chapter index
+                <!--
+		<li>chapter index
                     <ul>
                         <li>Lists an index of the tutorials</li>
                     </ul>
@@ -167,10 +168,13 @@ __DATA__
                         <li>Looks up a term</li>
                     </ul>
                 </li>
-                <li>links
+                -->
+                <li>links - Some helpful links for anyone interested in Rakudo Perl 6
                     <ul>
-                        <li><a href="#">Some</a> useful Links</li>
-                        <li><a href="https://www.google.com">Google is useful, right?</a></li>
+                        <li><a href="http://perlcabal.org/syn/">Perl 6 Specification</a></li>
+                        <li><a href="http://rakudo.org/how-to-get-rakudo">How to get Rakudo Perl 6</a></li>
+                        <li><a href="http://www.rakudo.org/">Rakudo Offical Website</a></li>
+                        <li><a href="http://perl6advent.wordpress.com/">Perl 6 Advent Calendar</a></li>
                     </ul>
                 </li>
             </ul>
