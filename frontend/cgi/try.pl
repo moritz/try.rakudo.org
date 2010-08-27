@@ -78,4 +78,5 @@ get '/cmd' => sub {
 app->secret('foo');
 #$cgi->run;
 app->start;
+__DATA__
 

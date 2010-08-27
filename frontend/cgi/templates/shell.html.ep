@@ -4,14 +4,14 @@
  <head>
   <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
   <title>Try Rakudo and Learn Perl 6 -- all in your browser (Beta)</title>
-  <link rel="stylesheet" type="text/css" href="http://try.rakudo.org/styles/shell.css" />
+  <link rel="stylesheet" type="text/css" href="/styles/shell.css" />
   <link rel="shortcut icon" type="image/x-icon" href="/images/fav.ico" />
   <script type="text/javascript" src="http://www.google.com/jsapi"></script>
   <script type="text/javascript">
   google.load('jquery', '1.4');
   </script>
-  <script type="text/javascript" src="http://try.rakudo.org/js/jquery.scrollTo-1.4.2.js"></script>
-  <script type="text/javascript" src="/try.js"></script>
+  <script type="text/javascript" src="/js/jquery.scrollTo-1.4.2.js"></script>
+  <script type="text/javascript" src="/js/try.js"></script>
  </head>
  <body>
     <div id="wrapper">
@@ -32,7 +32,7 @@
             <div id="feedback">
             </div>
             <div id="footer">
-                Content, content and content.
+                <!-- Content, content and content. -->
             </div>
         </div>
         <div id="abs_footer">
@@ -65,6 +65,7 @@
                         <li>Resets the console</li>
                     </ul>
                 </li>
+                <!--
                 <li>chapter index
                     <ul>
                         <li>Lists an index of the tutorials</li>
@@ -80,15 +81,18 @@
                         <li>Looks up a term</li>
                     </ul>
                 </li>
-                <li>links
+                -->
+                <li>links - Some helpful links for anyone interested in Rakudo Perl 6
                     <ul>
-                        <li><a href="#">Some</a> useful Links</li>
-                        <li><a href="https://www.google.com">Google is useful, right?</a></li>
+                        <li><a href="http://perlcabal.org/syn/">Perl 6 Specification</a></li>
+                        <li><a href="http://rakudo.org/how-to-get-rakudo">How to get Rakudo Perl 6</a></li>
+                        <li><a href="http://www.rakudo.org/">Rakudo Offical Website</a></li>
+                        <li><a href="http://perl6advent.wordpress.com/">Perl 6 Advent Calendar</a></li>
                     </ul>
                 </li>
             </ul>
         </div>
-        <img src="http://try.rakudo.org/images/ajax-loader.gif" alt="Loading..." class="loading_icon" />
+        <img src="/images/ajax-loader.gif" alt="Loading..." class="loading_icon" />
     </div>
  </body>
 </html>
