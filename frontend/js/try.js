@@ -1,5 +1,4 @@
     $(function () {
-        var history = ["", ""];
         var keywords = ['class', 'let', 'my', 'our', 'state', 'temp', 'has', 'constant', 'sub',
                         'method', 'submethod', 'module', 'role', 'package', 'token', 'grammar',
                         'augment', 'use', 'require', 'is', 'does', 'take', 'do', 'when', 'next',
@@ -82,7 +81,6 @@
                 load_chapter(match[1]);
             },
             clear : function () {
-                history = ["", ""];
                 $("#stdout").html("");
                 $("#stdin").val('');
                 return true;
@@ -127,18 +125,15 @@
             loading();
             var input = $("#stdin").val();
             if (input[input.length - 1] != ';') input += ';';
-            $.getJSON('/cmd', "input=" + encodeURIComponent(history[0] + input),
+            $.getJSON('/cmd', "input=" + encodeURIComponent(input),
                 function (result) {
                     done_loading();
                     if (result['error']) {
                         alert("An error has occured somewhere.\nCurrently, it could be an unimplemented command or an error on the server.\n\nSorry about that.");
-			return;
+                        return;
                     }
                     else {
-                        history[0] += input;
-                        result.stdout = result.stdout + "";
-                        $("#stdout").append(format(input, result.stdout.replace(history[1], "")));
-                        history[1] += result.stdout.replace(history[1], "");
+                        $("#stdout").append(format(input, result.stdout + "", "")));
                     }
                     $("#stdout").scrollTo($("#stdout p:last-child"), 300);
                 }

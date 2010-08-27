@@ -102,7 +102,7 @@ POE::Component::Server::TCP->new(
   Port        => 11211,
   ClientInput => sub {
       my ($heap, $input) = @_[HEAP, ARG0];
-      warn 'yo!';
+      warn 'yo! ' . $input;
       eval {
           my $ssid;
           $input =~ /^id<(.+)>/m;
