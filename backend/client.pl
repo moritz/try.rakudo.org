@@ -12,7 +12,6 @@ use POE::Wheel::SocketFactory;    # To create sockets.
 use POE::Wheel::ReadWrite;        # To read/write lines with sockets.
 use POE::Wheel::ReadLine;         # To read/write lines on the console.
 
-use v5.12;
 use IO::Socket;
 
 my $remote = IO::Socket::INET->new(
@@ -52,7 +51,7 @@ sub console_input {
     my $done = 0;
     while (!$done) {
         my $a = $remote->getline;
-        if ($a =~ /^=>/) {
+        if ($a && $a =~ /^=>$/) {
             $done = 1;
         }
         else {

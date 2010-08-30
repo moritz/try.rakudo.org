@@ -18,8 +18,8 @@ use IPC::Run qw(run timeout);
 
 my $cgi = Mojo::Server::CGI->new;
 
-my $perl6 = '/Users/john/Projects/rakudo/parrot_install/bin/perl6'; 
-my $in_txt = '/Users/john/Projects/try.rakudo.org/frontend/data/input_text.txt';
+my $perl6 = '/home/john/Projects/rakudo/parrot_install/bin/perl6'; 
+my $in_txt = '/home/john/Projects/try.rakudo.org/frontend/data/input_text.txt';
 
 get '/shell' => sub {
     my $self = shift;
@@ -76,7 +76,4 @@ get '/cmd' => sub {
 };
 
 app->secret('foo');
-#$cgi->run;
-app->start;
-__DATA__
-
+$cgi->run;

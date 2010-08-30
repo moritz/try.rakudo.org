@@ -133,7 +133,7 @@
                         return;
                     }
                     else {
-                        $("#stdout").append(format(input, result.stdout + "", "")));
+                        $("#stdout").append(format(input, result.stdout + "", ""));
                     }
                     $("#stdout").scrollTo($("#stdout p:last-child"), 300);
                 }
