@@ -59,9 +59,14 @@ get '/cmd' => sub {
 
         eval {
             while (<$remote>) {
-                last if $_ =~ /=>/;
+                $_ =~ s/^\s+//;
+                $_ =~ s/\s+$//;
+                last if $_ eq ">>$id<<";
                 $result .= $_;
             }
+            
+            app->log->warn('done with loop');
+            $result = substr $result, 0, length ">>$id<<";
         };
         if ($@) { 
             app->log->warn("Got an error, $! $@");
