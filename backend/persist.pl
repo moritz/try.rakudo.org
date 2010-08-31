@@ -2,9 +2,15 @@ use warnings;
 use strict;
 use POE qw(Component::Server::TCP);
 use Time::HiRes qw(time);
-use v5.12;
 
-my $perl6 = '/Users/john/Projects/rakudo/parrot_install/bin/perl6';
+my @perl6 = [
+             '/Users/john/Projects/rakudo/parrot_install/bin/perl6',
+             '/Users/john/Projects/try.rakudo.org/backend/p6safe.pl'
+            ];
+            
+if (-e -x $perl6[0] && -e -x $perl6[1]) {
+    die "Fix executable's for the Rakudo Eval daemon to function properly.";
+}
 
 {    
     package P6Interp;
@@ -17,43 +23,27 @@ my $perl6 = '/Users/john/Projects/rakudo/parrot_install/bin/perl6';
         my $self  = {};
         
         $self->{in} = $self->{out} = $self->{err} = '';
-        
-        # my $in = q<my $*ARGFILES = open '/Users/john/Projects/try.rakudo.org/frontend/data/input_text.txt'; module Safe { our sub forbidden(*@a, *%h) { die "Operation not permitted in safe mode" }; &GLOBAL::open := &forbidden; &GLOBAL::run := &forbidden; &GLOBAL::slurp := &forbidden; &GLOBAL::unlink := &forbidden; &GLOBAL::dir := &forbidden; }; use FORBID_PIR;>;
-#     # Add Socket;
-#     Q:PIR {
-#         $P0 = get_hll_namespace
-#         $P1 = get_hll_global ['Safe'], '&forbidden'
-#         $P0['!qx']  = $P1
-#         null $P1
-#         set_hll_global ['IO'], 'Socket', $P1
-#     }; };
-# }
-#>;
         $self->{timer} = timeout 15;
         
         my $h;
         eval {
-            $h = harness [$perl6], \$self->{in}, \$self->{out}, $self->{timer}
+            $h = harness @perl6, \$self->{in}, \$self->{out}, $self->{timer}
                 or die "perl6 died: $?";
             
             $self->{p6interp} = \$h;
-            # $self->{in} = $in;
             
-            $h->start;
             $self->{timer}->start( 15 );
+            $h->start;
             
             $h->pump until $self->{out} =~ />\s/m;
             $self->{out} = '';
         };
         if ( $@ ) {
-            my $x = $@;    ## Preserve $@ in case another exception occurs
+            my $x = $@;   ## Preserve $@ in case another exception occurs
             kill_kill $h; ## kill it gently, then brutally if need be, or just
-                       ## brutally on Win32.
+                          ## brutally on Win32.
             die $x;
         }
-        
-        warn 'made a new p6interp';
-        # $self->{in} = q<my $*ARGFILES = open '/Users/john/Projects/try.rakudo.org/frontend/data/input_text.txt';>;
         
         bless ($self, $class);
         return $self;
@@ -98,11 +88,10 @@ my $perl6 = '/Users/john/Projects/rakudo/parrot_install/bin/perl6';
 }
 
 POE::Component::Server::TCP->new(
-  Alias       => "echo_server",
+  Alias       => "rakudo_eval",
   Port        => 11211,
   ClientInput => sub {
       my ($heap, $input) = @_[HEAP, ARG0];
-      warn 'yo! ' . $input;
       eval {
           my $ssid;
           $input =~ /^id<(.+)>/m;
@@ -115,7 +104,6 @@ POE::Component::Server::TCP->new(
               my $result = $Server::storage->{$ssid}->send($input);
               $heap->{client}->put($result);
           }
-          warn 'done evaling... ' . ref($heap->{client});
           $heap->{client}->put("=>");
       };
       if ( $@ ) {
@@ -126,10 +114,8 @@ POE::Component::Server::TCP->new(
 
 $poe_kernel->run();
 exit 0;
-###############################################################################
-# The UNIX socket server.
+
 package Server;
-use POE::Session;    # For KERNEL, HEAP, etc.
 
 our $storage = {};
 

@@ -30,11 +30,9 @@
         function format(input, output, error) {
             /* This function could be used for basic syntax highlighting. */
             input = highlight(input.replace(/^\s*/, ""));
-            if (output)
-                output = highlight(output.replace(/^\s*/, ""));
-            
-            var result = "<p>" + input + "</p>";
-            result += "<p><span>&#x2192;</span>&nbsp;" + output + "</p>";
+            var result = "<p><span>&#x2192;</span>&nbsp;" + input + "</p>";
+            output = highlight(output.replace(/^\s*/, ""));
+            result += "<p>" + output + "</p>";
             
             if (error) {
                 result += "<p class=\"stderr\">&#9760;&nbsp;"+error+"</p>";
@@ -129,7 +127,7 @@
                 function (result) {
                     done_loading();
                     if (result['error']) {
-                        alert("An error has occured somewhere.\nCurrently, it could be an unimplemented command or an error on the server.\n\nSorry about that.");
+                        alert("An error has occured on the server. Error Message:\n\n" + result["error"]);
                         return;
                     }
                     else {

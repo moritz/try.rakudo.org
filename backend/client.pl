@@ -19,7 +19,7 @@ my $remote = IO::Socket::INET->new(
 		PeerAddr => "localhost",
 		PeerPort => 11211,
 	    )
-	  or die "cannot connect to daytime port at localhost";
+	  or die "cannot connect to Rakudo Eval Server port at localhost";
 
 $remote->autoflush(1);
 
@@ -49,14 +49,8 @@ sub console_input {
     print $remote "id<$id> $input\n";
 
     my $done = 0;
-    while (!$done) {
-        my $a = $remote->getline;
-        if ($a && $a =~ /^=>$/) {
-            $done = 1;
-        }
-        else {
-            print $a;
-        }
+    while (<$remote>) {
+        print;
     }
   }
   elsif ($exception eq 'cancel') {
