@@ -6,8 +6,8 @@ use Time::HiRes qw(time);
 
 my $timeout = 60 * 10; # in seconds
 my @perl6 = [
-             '/Users/john/Projects/rakudo/parrot_install/bin/perl6',
-             '/Users/john/Projects/try.rakudo.org/backend/p6safe.pl'
+             '/home/john/Projects/rakudo/parrot_install/bin/perl6',
+             '/home/john/Projects/try.rakudo.org/backend/p6safe.pl'
             ];
             
 if (-e -x $perl6[0] && -e -x $perl6[1]) {
