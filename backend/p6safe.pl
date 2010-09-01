@@ -2,11 +2,13 @@ my $*ARGFILES = open '/home/john/Projects/try.rakudo.org/frontend/data/input_tex
 
 module Safe { 
     our sub forbidden(*@a, *%h) { die "Operation not permitted in safe mode" }; 
-    &GLOBAL::open   := &forbidden; 
-    &GLOBAL::run    := &forbidden; 
-    &GLOBAL::slurp  := &forbidden; 
-    &GLOBAL::unlink := &forbidden; 
-    &GLOBAL::dir    := &forbidden; 
+    &GLOBAL::open   := &forbidden;
+    &GLOBAL::run    := &forbidden;
+    &GLOBAL::slurp  := &forbidden;
+    &GLOBAL::unlink := &forbidden;
+    &GLOBAL::dir    := &forbidden;
+    &GLOBAL::chdir  := &forbidden;
+    &GLOBAL::mkdir  := &forbidden;
 }
 use FORBID_PIR;
 
