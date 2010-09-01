@@ -50,8 +50,12 @@ sub console_input {
 
     my $done = 0;
     while (<$remote>) {
+        $_ =~ s/^\s+//;
+        $_ =~ s/\s+$//;
+        last if $_ eq ">>$id<<";
         print;
     }
+    print "\n"
   }
   elsif ($exception eq 'cancel') {
     $heap->{cli_wheel}->put("Canceled.");

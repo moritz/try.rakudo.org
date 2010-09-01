@@ -5,49 +5,42 @@ use POE qw(Component::Server::TCP);
 use Time::HiRes qw(time);
 
 my $timeout = 60 * 10; # in seconds
-my @perl6 = [
-             '/home/john/Projects/rakudo/parrot_install/bin/perl6',
-             '/home/john/Projects/try.rakudo.org/backend/p6safe.pl'
-            ];
-            
-if (-e -x $perl6[0] && -e -x $perl6[1]) {
-    die "Fix executable's for the Rakudo Eval daemon to function properly.";
+
+open(my $cfg, '<', '.config') or die $!;
+
+my $perl6;
+while (<$cfg>) {
+    $_ =~ s/^\s+//;
+    $_ =~ s/\s+$//;
+    
+    $perl6 = $_;
 }
 
 {    
     package P6Interp;
     use Time::HiRes qw(time);
-    use IPC::Run qw(harness timeout kill_kill);
+    use IO::Pty::HalfDuplex;
     
     sub new {
         my $proto = shift;
         my $class = ref($proto) || $proto;
         my $self  = {};
         
-        $self->{in} = $self->{out} = $self->{err} = '';
-        $self->{timer} = timeout 15;
-        
-        my $h;
+        my $pty;
         eval {
-            $h = harness @perl6, \$self->{in}, 
-                    '1>', \$self->{out}, 
-                    '2>', \$self->{err}, 
-                    $self->{timer}
-                or die "perl6 died: $?";
+            $pty = IO::Pty::HalfDuplex->new;
+            $pty->spawn($perl6);
             
-            $self->{p6interp} = \$h;
+            while (my $result = $pty->recv(5)) {
+                if ($result =~ />\s$/){
+                    last;
+                } 
+            }
             
-            $self->{timer}->start( 15 );
-            $h->start;
-            
-            $h->pump until $self->{out} =~ />\s/m;
-            $self->{out} = '';
+            $self->{p6interp} = $pty;
         };
         if ( $@ ) {
-            my $x = $@;   ## Preserve $@ in case another exception occurs
-            kill_kill $h; ## kill it gently, then brutally if need be, or just
-                          ## brutally on Win32.
-            die $x;
+            die $@;
         }
         
         bless ($self, $class);
@@ -56,31 +49,31 @@ if (-e -x $perl6[0] && -e -x $perl6[1]) {
     
     sub gather_result {
         my ($self) = shift;
-        my $interp = $self->{p6interp};
+        my $result = '';
         eval {
-            ($$interp)->pump until $self->{out} =~ /\n>\s/m;
+            while (my $recv = $self->{p6interp}->recv(5)) {
+                if ($recv =~ /\n>\s$/m){
+                    $recv =~ s/\n>\s$//m;
+                    $result .= $recv . "\n";
+                    last;
+                } 
+                else {
+                    $result .= $recv;
+                }
+            }
         };
         if ( $@ ) {
             die "failed to gather a result $@";
         }
+        
+        return $result;
     }
     
     sub send {
         my ($self, $command) = @_;
-        
         $self->{time} = time + $timeout;
-        my $interp = $self->{p6interp};
-        $self->{timer}->start( 15 );
-
-        $self->{in} = $command . "\n";
-        pump $$interp while length $self->{in};
-        $self->gather_result;
-        
-        my $result = $self->{out};
-        $self->{out} = '';
-        
-        $result =~ s/\n>\s//m;
-        
+        $self->{p6interp}->write($command . "\n");
+        my $result = $self->gather_result;
         return $result;
     }
     
@@ -88,15 +81,12 @@ if (-e -x $perl6[0] && -e -x $perl6[1]) {
         my ($self) = shift;
         
         eval {
-            my $interp = $self->{p6interp};
-            $$interp->kill_kill;
+            $self->{p6interp}->kill;
         };
         if ($@) {
             die "$@";
         }
     }
-    
-    no Moose;
 }
 
 POE::Session->create(
