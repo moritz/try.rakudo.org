@@ -30,8 +30,12 @@
         function format(input, output, error) {
             /* This function could be used for basic syntax highlighting. */
             input = highlight(input.replace(/^\s*/, ""));
-            var result = "<p><span>&#x2192;</span>&nbsp;" + input + "</p>";
-            output = highlight(output.replace(/^\s*/, ""));
+            input.split("\n");
+            var result = "";
+            $.each(input.split("\n"), function () {
+                result += "<p><span>&#x2192;</span>&nbsp;" + this + "</p>";
+            });
+            output = output.replace(/^\s*/, "");
             result += "<p>" + output + "</p>";
             
             if (error) {
@@ -87,6 +91,12 @@
         var error_tracker = false;
         var a = 0; // this is to cause a fake error every few calls
         $("#stdin").keydown(function (evt) {
+            if (evt.keyCode == 38) {
+                //alert("Up pressed, only i don't have a command history yet");
+            }
+            if (evt.keyCode == 40) {
+                //alert("Down pressed, only  i don't have a command history yet");
+            }
             if (evt.keyCode == 9 && evt.shiftKey == false && evt.ctrlKey == false && evt.altKey == false && evt.metaKey == false) { // tab pressed
                 $(this).val($(this).val() + "    ");
                 evt.preventDefault();
@@ -122,7 +132,6 @@
             
             loading();
             var input = $("#stdin").val();
-            if (input[input.length - 1] != ';') input += ';';
             $.getJSON('/cmd', "input=" + encodeURIComponent(input),
                 function (result) {
                     done_loading();

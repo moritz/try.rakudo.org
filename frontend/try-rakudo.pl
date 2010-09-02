@@ -15,8 +15,6 @@ use Digest::SHA1 qw(sha1_hex);
 use File::Temp qw(tempfile);
 use IPC::Run qw(run timeout);
 
-my $cgi = Mojo::Server::CGI->new;
-
 my $perl6 = '/Users/john/Projects/rakudo/parrot_install/bin/perl6'; 
 my $in_txt = '/Users/john/Projects/try.rakudo.org/frontend/data/input_text.txt';
 
@@ -54,24 +52,22 @@ get '/cmd' => sub {
         
         my $input = $self->param('input');
         my $id = $self->session->{sess_id};
-        
-        print $remote "id<$id> $input\n";
+        my $end = qr/>>$id<</;
 
         eval {
+            $input =~ s/\n//m;
+            print $remote "id<$id> $input\n";
             while (<$remote>) {
-                $_ =~ s/^\s+//;
-                $_ =~ s/\s+$//;
-                last if $_ eq ">>$id<<";
+                app->log->debug("id<$id> received: $input");
+                $_ =~ s/^[ ]+//;
+                $_ =~ s/[ ]+$//;
+                last if m/$end/;
                 $result .= $_;
             }
-            
-            app->log->warn('done with loop');
-            $result = substr $result, 0, length ">>$id<<";
         };
         if ($@) { 
             app->log->warn("Got an error, $! $@");
         }
-        
         close $remote;
     };
     if ($@) {
@@ -79,11 +75,15 @@ get '/cmd' => sub {
         return $self->render_json({error => $@});
     }
     else {
-        $result = substr($result, length($self->param('input')));
         return $self->render_json({stdout => $result, stdin => $self->param('input')});
     }
 };
 
-# app->secret('rakudo_server');
-# $cgi->run;
 app->start;
+
+# Local Variables:
+#   mode: cperl
+#   cperl-indent-level: 4
+#   fill-column: 100
+# End:
+# vim: expandtab shiftwidth=4:

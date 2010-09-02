@@ -3,6 +3,7 @@ use strict;
 use POE;
 use POE qw(Component::Server::TCP);
 use Time::HiRes qw(time);
+use encoding 'utf8';
 
 my $timeout = 60 * 10; # in seconds
 
@@ -58,7 +59,10 @@ while (<$cfg>) {
                     last;
                 } 
                 else {
-                    $result .= $recv;
+                    $result .= $recv . "\n";
+                }
+                if (!$self->{p6interp}->is_active) {
+                    $result .= "Rakudo REPL has closed... restarting\n";
                 }
             }
         };
@@ -66,11 +70,26 @@ while (<$cfg>) {
             die "failed to gather a result $@";
         }
         
+        if (!$self->{p6interp}->is_active) {
+            $result .= "Rakudo REPL has closed... restarting\n";
+        }
         return $result;
     }
     
     sub send {
         my ($self, $command) = @_;
+        if (!$self->{p6interp}->is_active) {
+            my $pty = IO::Pty::HalfDuplex->new;
+            $pty->spawn($perl6);
+            
+            while (my $result = $pty->recv(5)) {
+                if ($result =~ />\s$/){
+                    last;
+                } 
+            }
+            
+            $self->{p6interp} = $pty;
+        }
         $self->{time} = time + $timeout;
         $self->{p6interp}->write($command . "\n");
         my $result = $self->gather_result;
@@ -114,11 +133,12 @@ POE::Component::Server::TCP->new(
   Port        => 11211,
   ClientInput => sub {
       my ($heap, $input) = @_[HEAP, ARG0];
+      warn "Got inpur: $input";
       eval {
           my $ssid;
-          $input =~ /^id<(.+)>/m;
+          $input =~ /^id<([^>]+)>\s/m;
           $ssid = $1;
-          $input =~ s/^id<(.+)>\s//m;
+          $input =~ s/^id<([^>]+)>\s//m;
           unless ($Server::storage->{$ssid}) {
               $Server::storage->{$ssid} = P6Interp->new;
           }
