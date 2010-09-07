@@ -50,15 +50,15 @@ get '/cmd' => sub {
         $remote->autoflush(1);
         $remote->timeout( 15 );
         
-        my $input = $self->param('input');
+        my $input = Mojo::ByteStream->new($self->param('input'));
         my $id = $self->session->{sess_id};
         my $end = qr/>>$id<</;
 
         eval {
             $input =~ s/\n//m;
-            print $remote "id<$id> $input\n";
+            print $remote "id<$id> " . $input . "\n";
             while (<$remote>) {
-                app->log->debug("id<$id> received: $input");
+                app->log->debug("id<$id> received: " . $input->url_unescape);
                 $_ =~ s/^[ ]+//;
                 $_ =~ s/[ ]+$//;
                 last if m/$end/;
@@ -75,7 +75,9 @@ get '/cmd' => sub {
         return $self->render_json({error => $@});
     }
     else {
-        return $self->render_json({stdout => $result, stdin => $self->param('input')});
+        my $escaped_result = Mojo::ByteStream->new($result);
+        return $self->render_json({stdout => $escaped_result->xml_escape->to_string, 
+                                   stdin => $self->param('input')});
     }
 };
 
