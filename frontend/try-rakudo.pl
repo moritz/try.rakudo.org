@@ -1,22 +1,11 @@
 #!/usr/bin/perl
 use strict;
 use warnings;
-use mro 'c3';
-use encoding 'utf8';
-
-# Web Requirements
+use Encode;
 use Mojolicious::Lite;
-use Mojo::Server::CGI;
 use Mojo::JSON;
 use IO::Socket;
 use Digest::SHA1 qw(sha1_hex);
-
-# Requirements for running the commands
-use File::Temp qw(tempfile);
-use IPC::Run qw(run timeout);
-
-my $perl6 = '/Users/john/Projects/rakudo/parrot_install/bin/perl6'; 
-my $in_txt = '/Users/john/Projects/try.rakudo.org/frontend/data/input_text.txt';
 
 get '/shell' => sub {
     my $self = shift;
@@ -50,15 +39,16 @@ get '/cmd' => sub {
         $remote->autoflush(1);
         $remote->timeout( 15 );
         
-        my $input = Mojo::ByteStream->new($self->param('input'));
+        my $input = $self->param('input');
         my $id = $self->session->{sess_id};
         my $end = qr/>>$id<</;
 
         eval {
             $input =~ s/\n//m;
-            print $remote "id<$id> " . $input . "\n";
+            my $msg = "id<$id> $input\n";
+            print $remote encode('utf8' => $msg);
             while (<$remote>) {
-                app->log->debug("id<$id> received: " . $input->url_unescape);
+                app->log->debug($msg);
                 $_ =~ s/^[ ]+//;
                 $_ =~ s/[ ]+$//;
                 last if m/$end/;
@@ -75,7 +65,7 @@ get '/cmd' => sub {
         return $self->render_json({error => $@});
     }
     else {
-        my $escaped_result = Mojo::ByteStream->new($result);
+        my $escaped_result = Mojo::ByteStream->new(decode('utf8' => $result));
         return $self->render_json({stdout => $escaped_result->xml_escape->to_string, 
                                    stdin => $self->param('input')});
     }

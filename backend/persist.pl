@@ -1,5 +1,6 @@
 use warnings;
 use strict;
+use Encode;
 use POE;
 use POE qw(Component::Server::TCP);
 use Time::HiRes qw(time);
@@ -57,7 +58,7 @@ while (<$cfg>) {
                     $recv =~ s/\n>\s$//m;
                     $result .= $recv . "\n";
                     last;
-                } 
+                }
                 else {
                     $result .= $recv . "\n";
                 }
@@ -70,9 +71,6 @@ while (<$cfg>) {
             die "failed to gather a result $@";
         }
         
-        if (!$self->{p6interp}->is_active) {
-            $result .= "Rakudo REPL has closed... restarting\n";
-        }
         return $result;
     }
     
@@ -133,7 +131,7 @@ POE::Component::Server::TCP->new(
   Port        => 11211,
   ClientInput => sub {
       my ($heap, $input) = @_[HEAP, ARG0];
-      warn "Got inpur: $input";
+      warn "Received input: $input";
       eval {
           my $ssid;
           $input =~ /^id<([^>]+)>\s/m;
@@ -144,7 +142,7 @@ POE::Component::Server::TCP->new(
           }
           if ($input) {
               my $result = $Server::storage->{$ssid}->send($input);
-              $heap->{client}->put($result);
+              $heap->{client}->put(encode('utf8' => $result));
           }
           $heap->{client}->put(">>$ssid<<");
       };
