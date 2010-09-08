@@ -4,7 +4,6 @@ use Encode;
 use POE;
 use POE qw(Component::Server::TCP);
 use Time::HiRes qw(time);
-use encoding 'utf8';
 
 my $timeout = 60 * 10; # in seconds
 
@@ -116,7 +115,7 @@ POE::Session->create(
             while (my ($k, $v) = each %$Server::storage) {
                 my $last_used = $v->{time};
                 
-                if ($v->{time} < time) {
+                if ($v->{time} && $v->{time} < time) {
                     $v->stop;
                     delete $Server::storage->{$k};
                 }

@@ -20,7 +20,6 @@ get '/' => sub {
         unless $self->session('sess_id');
     
     return $self->render(template => 'shell', 
-                         session => $self->session->{sess_id}, 
                          txt => $txt);
 };
 
