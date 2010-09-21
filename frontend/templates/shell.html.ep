@@ -27,9 +27,11 @@
             </div>
 
             <div id="feedback">
-                <h1>Unfurtounately you don't seem to have javascript enabled</h1>
+                <noscript>
+                <h1>Unfortunately you don't seem to have javascript enabled</h1>
                 <p>It seems this browser does not have javascript enabled. To provide the best interactive user experience we currently require that javascript is enabled in the browser. There are plans to have a limited set of functionality enabled for browsers without javascript, but this part of the project is not complete.</p>
-                <p>Please enable javascript to enjoy the full user experience. <a href="http://www.google.com/support/websearch/bin/answer.py?hl=en&answer=23852">How to enable javascript</a></p> 
+                <p>Please enable javascript to enjoy the full user experience. <a href="http://www.google.com/support/websearch/bin/answer.py?hl=en&amp;answer=23852">How to enable javascript</a></p>
+                </noscript>
             </div>
             <div id="footer">
                 <!-- Content, content and content. -->
@@ -87,7 +89,7 @@
                     <ul>
                         <li><a href="http://perlcabal.org/syn/">Perl 6 Specification</a></li>
                         <li><a href="http://rakudo.org/how-to-get-rakudo">How to get Rakudo Perl 6</a></li>
-                        <li><a href="http://www.rakudo.org/">Rakudo Offical Website</a></li>
+                        <li><a href="http://www.rakudo.org/">Rakudo Official Website</a></li>
                         <li><a href="http://perl6advent.wordpress.com/">Perl 6 Advent Calendar</a></li>
                     </ul>
                 </li>

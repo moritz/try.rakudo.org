@@ -19,13 +19,10 @@ $(function () {
         $.each(html_entities, function () {
             if (this && this[0] && this[1])
                 text = text.replace(this[0], this[1]);
-        });
-        $.each(constants, function (klass) {
-            text = text.replace(this[0], this[1]);
-        });
-        text = text.replace(variables, '<b class="var">$1</b>');
-        text = text.replace(new RegExp('\\b('+ keywords.join('|') +')(?!=)\\b', 'gm'), "<span class=\"keyword\">$1</span>");
-        return text;
+            });
+            text = text.replace(variables, '<b class="var">$1</b>');
+            text = text.replace(new RegExp('\\b('+ keywords.join('|') +')(?!=)\\b', 'gm'), "<span class=\"keyword\">$1</span>");
+            return text;
     }
     function format(input, output, error) {
         /* This function could be used for basic syntax highlighting. */
@@ -33,10 +30,10 @@ $(function () {
         input.split("\n");
         var result = "";
         $.each(input.split("\n"), function () {
-            result += "<p><span>&#x2192;</span>&nbsp;" + this + "</p>";
+            result += "<p><span>&#x2192;</span>&nbsp;<kbd class=\"input\">" + this + "</kbd></p>";
         });
         output = output.replace(/^\s*/, "");
-        result += "<p>" + output + "</p>";
+        result += "<p><samp class=\"output\">" + output + "</samp></p>";
         
         if (error) {
             result += "<p class=\"stderr\">&#9760;&nbsp;"+error+"</p>";

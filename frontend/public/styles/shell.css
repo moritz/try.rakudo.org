@@ -76,7 +76,6 @@ textarea {
     color: #E1EFFF;
     height: 300px;
     overflow: auto;
-    padding: 3px 6px;
     border-top-left-radius: 1em;
     -moz-border-radius-topleft: 1em;
     -webkit-border-top-left-radius: 1em;
@@ -85,12 +84,13 @@ textarea {
     -webkit-border-top-right-radius: 1em;
     -moz-box-shadow: 5px 5px 10px #8ECFFF;
     -webkit-box-shadow: 5px 5px 10px #8ECFFF;
+    resize: vertical;
 }
 
 #stdout p {
     line-height: 18px;
     font-size: 18px;
-    margin: 0;
+    margin: 3px 6px;
     padding: 0;
 }
 
@@ -100,6 +100,10 @@ textarea {
     padding: 0 3px 3px;
     color: #332b33;
     border: 2px solid #eb0e20;
+}
+
+#stdout .input, #stdout .output {
+    word-wrap: break-word;
 }
 
 #stdin {
@@ -117,6 +121,7 @@ textarea {
     -webkit-border-bottom-left-radius: 1em;
     -moz-box-shadow: 5px 5px 10px #8ECFFF;
     -webkit-box-shadow: 5px 5px 10px #8ECFFF;
+    outline: none; /* Chrome's focus ring sticks out of the bottom left curve */
 }
 
 #stdin_form {
@@ -140,6 +145,7 @@ textarea {
     -webkit-border-bottom-right-radius: 1em;
     -moz-box-shadow: 5px 5px 10px #8ECFFF;
     -webkit-box-shadow: 5px 5px 10px #8ECFFF;
+    cursor: pointer;
 }
 
 #send_btn span {
