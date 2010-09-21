@@ -27,9 +27,11 @@
             </div>
 
             <div id="feedback">
+                <noscript>
                 <h1>Unfortunately you don't seem to have javascript enabled</h1>
                 <p>It seems this browser does not have javascript enabled. To provide the best interactive user experience we currently require that javascript is enabled in the browser. There are plans to have a limited set of functionality enabled for browsers without javascript, but this part of the project is not complete.</p>
-                <p>Please enable javascript to enjoy the full user experience. <a href="http://www.google.com/support/websearch/bin/answer.py?hl=en&answer=23852">How to enable javascript</a></p> 
+                <p>Please enable javascript to enjoy the full user experience. <a href="http://www.google.com/support/websearch/bin/answer.py?hl=en&amp;answer=23852">How to enable javascript</a></p>
+                </noscript>
             </div>
             <div id="footer">
                 <!-- Content, content and content. -->
