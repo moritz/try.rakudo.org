@@ -76,7 +76,6 @@ textarea {
     color: #E1EFFF;
     height: 300px;
     overflow: auto;
-    padding: 3px 6px;
     border-top-left-radius: 1em;
     -moz-border-radius-topleft: 1em;
     -webkit-border-top-left-radius: 1em;
@@ -91,7 +90,7 @@ textarea {
 #stdout p {
     line-height: 18px;
     font-size: 18px;
-    margin: 0;
+    margin: 3px 6px;
     padding: 0;
 }
 
