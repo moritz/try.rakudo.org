@@ -85,6 +85,7 @@ textarea {
     -webkit-border-top-right-radius: 1em;
     -moz-box-shadow: 5px 5px 10px #8ECFFF;
     -webkit-box-shadow: 5px 5px 10px #8ECFFF;
+    resize: vertical;
 }
 
 #stdout p {
@@ -102,6 +103,10 @@ textarea {
     border: 2px solid #eb0e20;
 }
 
+#stdout .input, #stdout .output {
+    word-wrap: break-word;
+}
+
 #stdin {
     font-size: 18px;
     font-weight: normal;
@@ -117,6 +122,7 @@ textarea {
     -webkit-border-bottom-left-radius: 1em;
     -moz-box-shadow: 5px 5px 10px #8ECFFF;
     -webkit-box-shadow: 5px 5px 10px #8ECFFF;
+    outline: none; /* Chrome's focus ring sticks out of the bottom left curve */
 }
 
 #stdin_form {
@@ -140,6 +146,7 @@ textarea {
     -webkit-border-bottom-right-radius: 1em;
     -moz-box-shadow: 5px 5px 10px #8ECFFF;
     -webkit-box-shadow: 5px 5px 10px #8ECFFF;
+    cursor: pointer;
 }
 
 #send_btn span {

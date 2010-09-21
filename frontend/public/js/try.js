@@ -33,10 +33,10 @@
             input.split("\n");
             var result = "";
             $.each(input.split("\n"), function () {
-                result += "<p><span>&#x2192;</span>&nbsp;" + this + "</p>";
+                result += "<p><span>&#x2192;</span>&nbsp;<kbd class=\"input\">" + this + "</kbd></p>";
             });
             output = output.replace(/^\s*/, "");
-            result += "<p>" + output + "</p>";
+            result += "<p><samp class=\"output\">" + output + "</samp></p>";
             
             if (error) {
                 result += "<p class=\"stderr\">&#9760;&nbsp;"+error+"</p>";
