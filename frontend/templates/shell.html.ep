@@ -36,6 +36,7 @@
             </div>
         </div>
         <div id="abs_footer">
+            <p>If you encounter a bug please file a bug please help by filling a bug report on the <a href="http://github.com/moritz/try.rakudo.org/issues">github bug tracker</a>. Thank you</p>
             <p>Made possible by the folks that brought you Rakudo.</p>
         </div>
     </div>
@@ -82,7 +83,7 @@
                     </ul>
                 </li>
                 -->
-                <li>links - Some helpful links for anyone interested in Rakudo Perl 6
+                <li>And some helpful links for anyone interested in Rakudo Perl 6
                     <ul>
                         <li><a href="http://perlcabal.org/syn/">Perl 6 Specification</a></li>
                         <li><a href="http://rakudo.org/how-to-get-rakudo">How to get Rakudo Perl 6</a></li>
