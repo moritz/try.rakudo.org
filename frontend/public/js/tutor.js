@@ -28,7 +28,7 @@ tutor.prototype.show_step = function (step) {
         );
 }
 tutor.prototype.do_step = function (input) {
-    if ( input == this.steps[this.step-1].example ) {
+    if ( new RegExp(this.steps[this.step-1].match).exec(input) ) {
         this.next();
     }
 }
