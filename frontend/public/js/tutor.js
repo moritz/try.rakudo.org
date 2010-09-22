@@ -22,8 +22,7 @@ tutor.fn.prev = function () {
 tutor.fn.show_step = function (step) {
     var data = this.steps[step-1];
     this.cur_step
-        .html("")
-        .append(
+        .html(
             $('<p class="step">').text(
                 '(' + (this.step) + ' of ' + this.steps.length + ') ' + data.explanation
             )
@@ -48,14 +47,14 @@ function load_chapter(id) {
         tutorial = new tutor(data);
 
         tutorial.cur_step = $("<div>");
-        $('#feedback')
-            .html("")
-            .append(
-                $('<h1>')
-                    .text("Tutorial chapter " + id + ": " + data.title)
-                    .fadeIn('slow', function () { tutorial.show_step(1) })
-            )
-            .append(tutorial.cur_step);
+        tutorial.show_step(1);
+
+        $('#feedback').fadeOut('slow', function () {
+            $(this)
+                .html($('<h1>').text("Tutorial chapter " + id + ": " + data.title))
+                .append(tutorial.cur_step)
+                .fadeIn('slow');
+        });
     });
 }
 
