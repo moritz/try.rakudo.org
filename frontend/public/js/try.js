@@ -41,20 +41,43 @@ $(function () {
         
         return result;
     }
-    
+
+    var tutorial;
     function load_chapter(id) {
         $.getJSON('js/chapters/'+id+'.js', function (data) {
-            console.log(data);
-            $("#stdout").append($("<p>").text("Tutorial chapter " + id + ": " + data.title));
+            $('#stdout').append(
+                $('<h1>')
+                    .text("Tutorial chapter " + id + ": " + data.title)
+                    .fadeIn('slow', function () {
+                        tutorial = { chapter: id, steps: data.steps, current: 0 };
+                        tutorial_step(tutorial);
+                    })
+            );
         });
+    }
+
+    function tutorial_step() {
+        var step = tutorial.steps[tutorial.current];
+        $('#stdout')
+            .append(
+                $('<p class="step">').text(
+                    '(Step ' + (tutorial.current+1)
+                    + '/' + tutorial.steps.length + ') '
+                    + step.explanation)
+            ).append(
+                $('<p class="example">')
+                    .text('Example: ')
+                    .append( $('<samp>').text(step.example) )
+            );
     }
 
     function load_tutorial_index() {
         $("#feedback").fadeOut('slow', function () {
             $.getJSON('js/chapters/index.js', function (data) {
                 $("#feedback")
-                    .html($("<p>").text('Type "help" to display the help message again.'))
-                    .append($("<h1>").text(data.title));
+                    .html($("<h1>").text(data.title))
+                    .append($("<p>").text('Type "help" to display the help message again.'));
+
                 var list = $("<ul id=\"chapters\">");
                 $("#feedback").append(list);
                 for (var x in data.info) {
@@ -92,11 +115,18 @@ $(function () {
             return true;
         },
         next : function () {
-            alert("next");
+            if ( tutorial && tutorial.current < tutorial.steps.length-1 ) {
+                ++tutorial.current;
+                tutorial_step();
+            }
             $("#stdin").val('');
             return true;
         },
         prev : function () {
+            if ( tutorial && tutorial.current > 0 ) {
+                --tutorial.current;
+                tutorial_step();
+            }
             $("#stdin").val('');
             return true;
         },

@@ -68,7 +68,6 @@
                         <li>Resets the console</li>
                     </ul>
                 </li>
-                <!--
                 <li>chapter index
                     <ul>
                         <li>Lists an index of the tutorials</li>
@@ -79,6 +78,7 @@
                         <li>Goes to chapter # of the tutorial, where # is a number</li>
                     </ul>
                 </li>
+                <!--
                 <li>help /&lt;term&gt;/
                     <ul>
                         <li>Looks up a term</li>
