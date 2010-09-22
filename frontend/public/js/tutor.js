@@ -4,17 +4,21 @@ function tutor(data) {
     this.steps = data.steps;
     this.step = 1;
 }
-tutor.prototype.next = function () {
+tutor.fn = tutor.prototype;
+tutor.fn.next = function () {
     if ( this.step < this.steps.length ) {
         this.show_step(++this.step);
     }
+    else {
+        this.next_chapter();
+    }
 }
-tutor.prototype.prev = function () {
+tutor.fn.prev = function () {
     if ( this.step > 1 ) {
         this.show_step(--this.step);
     }
 }
-tutor.prototype.show_step = function (step) {
+tutor.fn.show_step = function (step) {
     var data = this.steps[step-1];
     $('#stdout')
         .append(
@@ -24,13 +28,16 @@ tutor.prototype.show_step = function (step) {
         ).append(
             $('<p class="example">')
                 .text('Example: ')
-                .append( $('<samp>').text(data.example) )
+                .append( $('<samp>').html(data.example + "&nbsp;&nbsp;&crarr;") )
         );
 }
-tutor.prototype.do_step = function (input) {
+tutor.fn.do_step = function (input) {
     if ( input == this.steps[this.step-1].example ) {
         this.next();
     }
+}
+tutor.fn.next_chapter = function () {
+    load_chapter(parseInt(this.chapter) + 1);
 }
 
 function load_chapter(id) {

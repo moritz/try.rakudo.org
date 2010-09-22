@@ -51,7 +51,7 @@ $(function () {
         'chapter (\\d+|index)' : function (match) {
             $("#stdin").val('');
             // Display chapter index if not already visible
-            if ( !document.getElementById('chapters') ) {
+            if ( !$('#chapters') ) {
                 load_tutorial_index();
             }
             if ( match[1] != 'index' ) {
@@ -62,11 +62,13 @@ $(function () {
         next : function () {
             tutorial && tutorial.next();
             $("#stdin").val('');
+            $("#stdout").scrollTo($("#stdout *:last-child"), 300);
             return true;
         },
         prev : function () {
             tutorial && tutorial.prev();
             $("#stdin").val('');
+            $("#stdout").scrollTo($("#stdout *:last-child"), 300);
             return true;
         },
         clear : function () {
@@ -133,7 +135,7 @@ $(function () {
                     tutorial.do_step(input);
                 }
 
-                $("#stdout").scrollTo($("#stdout p:last-child"), 300);
+                $("#stdout").scrollTo($("#stdout *:last-child"), 300);
             }
         );
         
