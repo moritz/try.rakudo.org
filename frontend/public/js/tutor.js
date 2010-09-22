@@ -61,15 +61,10 @@ function load_chapter(id) {
 function load_tutorial_index() {
     $("#feedback").fadeOut('slow', function () {
         $.getJSON('js/chapters/index.js', function (data) {
-            $("#feedback")
-                .html($("<h1>").text(data.title))
-                .append($("<p>").text('Type "help" to display the help message again.'));
-
             var list = $("<ul id=\"chapters\">");
-            $("#feedback").append(list);
+
             for (var x in data.info) {
                 var item = $("<li>").text(data.info[x].title);
-                list.append(item);
                 (function (item) {
                     if (data.info[x].details) {
                         var details = $("<ul>");
@@ -79,7 +74,13 @@ function load_tutorial_index() {
                         }
                     }
                 })(item);
+                list.append(item);
             }
+
+            $("#feedback")
+                .html($("<h1>").text(data.title))
+                .append($("<p>").text('Type "help" to display the help message again.'))
+                .append(list);
         });
         $("#feedback").fadeIn("slow");
     });
