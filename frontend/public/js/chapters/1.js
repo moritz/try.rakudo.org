@@ -13,7 +13,7 @@
                 },
                 {
                     "example": "(10 - 2) * 4",
-                    "match": "(\\s*10\\s*\\-\\s*2\\s*)\\s*\\*\\s*4",
+                    "match": "\\(\\s*10\\s*\\-\\s*2\\s*\\)\\s*\\*\\s*4",
                     "explanation": "Parentheses are done before anything else"
                 }
              ]

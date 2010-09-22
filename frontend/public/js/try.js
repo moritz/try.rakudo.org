@@ -51,7 +51,7 @@ $(function () {
         'chapter (\\d+|index)' : function (match) {
             $("#stdin").val('');
             // Display chapter index if not already visible
-            if ( !$('#chapters') ) {
+            if ( match[1] == 'index' ) {
                 load_tutorial_index();
             }
             if ( match[1] != 'index' ) {
@@ -117,7 +117,7 @@ $(function () {
         });
         
         if (done) return;
-        
+
         loading();
         var input = $("#stdin").val();
         $.getJSON('/cmd', "input=" + encodeURIComponent(input),
@@ -158,7 +158,7 @@ $(function () {
 
         var linecount = 0;
         $.each(str.split("\n"), function(k, l) {
-          linecount += Math.ceil( (this.length + 1) / cols );
+            linecount += Math.ceil( (this.length + 1) / cols );
         });
         
         $(this).attr('rows', linecount < 3 ? 3 : linecount + 1);
@@ -169,3 +169,4 @@ $(function () {
     $("#send_btn").height($("#stdin").height());
     $("#stdin").focus();
 });
+

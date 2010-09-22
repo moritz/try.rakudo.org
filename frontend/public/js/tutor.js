@@ -3,6 +3,7 @@ function tutor(data) {
     this.chapter = data.chapter;
     this.steps = data.steps;
     this.step = 1;
+    this.cur_step = '';
 }
 tutor.fn = tutor.prototype;
 tutor.fn.next = function () {
@@ -20,7 +21,8 @@ tutor.fn.prev = function () {
 }
 tutor.fn.show_step = function (step) {
     var data = this.steps[step-1];
-    $('#stdout')
+    this.cur_step
+        .html("")
         .append(
             $('<p class="step">').text(
                 '(' + (this.step) + ' of ' + this.steps.length + ') ' + data.explanation
@@ -45,11 +47,15 @@ function load_chapter(id) {
         data.chapter = id;
         tutorial = new tutor(data);
 
-        $('#stdout').append(
-            $('<h1>')
-                .text("Tutorial chapter " + id + ": " + data.title)
-                .fadeIn('slow', function () { tutorial.show_step(1) })
-        );
+        tutorial.cur_step = $("<div>");
+        $('#feedback')
+            .html("")
+            .append(
+                $('<h1>')
+                    .text("Tutorial chapter " + id + ": " + data.title)
+                    .fadeIn('slow', function () { tutorial.show_step(1) })
+            )
+            .append(tutorial.cur_step);
     });
 }
 
