@@ -45,14 +45,14 @@ $(function () {
     function load_chapter(id) {
         $("#feedback").fadeOut('slow', function () {
             $("#stdout").html("");
-            $.getJSON('/frontend/data/chapters/index.js', function (data) {
+            $.getJSON('js/chapters/index.js', function (data) {
                 $("#feedback").html($("<h1>").text(data.title));
                 if (data.steps) {
                 
                 }
                 else if (data.info) {
                     var list = $("<ul>");
-                    $("#feedback").append(list)
+                    $("#feedback").append(list);
                     for (var x in data.info) {
                         var item = $("<li>").text(data.info[x].title);
                         list.append(item);
