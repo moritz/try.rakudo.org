@@ -3,14 +3,17 @@
     "steps": [
                 {
                     "example": "[+] 1..2",
+                    "match" : "[\\+]\\s*1\\.\\.2",
                     "explanation": "List operators let you manipulate whole lists."
                 },
                 {
-                    "example": "10 - 2 * 4",
+                    "example" : "Foo",
+                    "match" : "Foo",
                     "explanation": "Multiply/divide are done before add/subtract"
                 },
                 {
-                    "example": "(10 - 2) * 4",
+                    "example": "Bar",
+                    "match" : "Bar"
                     "explanation": "Parentheses are done before anything else"
                 }
              ]

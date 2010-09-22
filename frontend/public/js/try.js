@@ -62,13 +62,13 @@ $(function () {
         next : function () {
             tutorial && tutorial.next();
             $("#stdin").val('');
-            $("#stdout").scrollTo($("#stdout *:last-child"), 300);
+            $("#stdout").scrollTo($("#stdout p:last-child"), 300);
             return true;
         },
         prev : function () {
             tutorial && tutorial.prev();
             $("#stdin").val('');
-            $("#stdout").scrollTo($("#stdout *:last-child"), 300);
+            $("#stdout").scrollTo($("#stdout p:last-child"), 300);
             return true;
         },
         clear : function () {
@@ -135,7 +135,7 @@ $(function () {
                     tutorial.do_step(input);
                 }
 
-                $("#stdout").scrollTo($("#stdout *:last-child"), 300);
+                $("#stdout").scrollTo($("#stdout p:last-child"), 300);
             }
         );
         
