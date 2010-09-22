@@ -77,6 +77,7 @@ $(function () {
     var commands = {
         help : function () {
             $("#feedback").html($("#help").html());
+            $("#stdin").val('');
             return true;
         },
         'chapter (\\d+|index)' : function (match) {
