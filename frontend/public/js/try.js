@@ -43,29 +43,32 @@ $(function () {
     }
     
     function load_chapter(id) {
+        $.getJSON('js/chapters/'+id+'.js', function (data) {
+            console.log(data);
+            $("#stdout").append($("<p>").text("Tutorial chapter " + id + ": " + data.title));
+        });
+    }
+
+    function load_tutorial_index() {
         $("#feedback").fadeOut('slow', function () {
-            $("#stdout").html("");
             $.getJSON('js/chapters/index.js', function (data) {
-                $("#feedback").html($("<h1>").text(data.title));
-                if (data.steps) {
-                
-                }
-                else if (data.info) {
-                    var list = $("<ul>");
-                    $("#feedback").append(list);
-                    for (var x in data.info) {
-                        var item = $("<li>").text(data.info[x].title);
-                        list.append(item);
-                        (function (item) {
-                            if (data.info[x].details) {
-                                var details = $("<ul>");
-                                item.append(details);
-                                for (var y in data.info[x].details) {
-                                    details.append($("<li>").text(data.info[x].details[y]));
-                                }
+                $("#feedback")
+                    .html($("<p>").text('Type "help" to display the help message again.'))
+                    .append($("<h1>").text(data.title));
+                var list = $("<ul id=\"chapters\">");
+                $("#feedback").append(list);
+                for (var x in data.info) {
+                    var item = $("<li>").text(data.info[x].title);
+                    list.append(item);
+                    (function (item) {
+                        if (data.info[x].details) {
+                            var details = $("<ul>");
+                            item.append(details);
+                            for (var y in data.info[x].details) {
+                                details.append($("<li>").text(data.info[x].details[y]));
                             }
-                        })(item);
-                    }
+                        }
+                    })(item);
                 }
             });
             $("#feedback").fadeIn("slow");
@@ -78,7 +81,13 @@ $(function () {
         },
         'chapter (\\d+|index)' : function (match) {
             $("#stdin").val('');
-            load_chapter(match[1]);
+            // Display chapter index if not already visible
+            if ( !document.getElementById('chapters') ) {
+                load_tutorial_index();
+            }
+            if ( match[1] != 'index' ) {
+                load_chapter(match[1]);
+            }
             return true;
         },
         next : function () {
