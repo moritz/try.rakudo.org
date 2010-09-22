@@ -42,61 +42,6 @@ $(function () {
         return result;
     }
 
-    var tutorial;
-    function load_chapter(id) {
-        $.getJSON('js/chapters/'+id+'.js', function (data) {
-            $('#stdout').append(
-                $('<h1>')
-                    .text("Tutorial chapter " + id + ": " + data.title)
-                    .fadeIn('slow', function () {
-                        tutorial = { chapter: id, steps: data.steps, current: 0 };
-                        tutorial_step(tutorial);
-                    })
-            );
-        });
-    }
-
-    function tutorial_step() {
-        var step = tutorial.steps[tutorial.current];
-        $('#stdout')
-            .append(
-                $('<p class="step">').text(
-                    '(Step ' + (tutorial.current+1)
-                    + '/' + tutorial.steps.length + ') '
-                    + step.explanation)
-            ).append(
-                $('<p class="example">')
-                    .text('Example: ')
-                    .append( $('<samp>').text(step.example) )
-            );
-    }
-
-    function load_tutorial_index() {
-        $("#feedback").fadeOut('slow', function () {
-            $.getJSON('js/chapters/index.js', function (data) {
-                $("#feedback")
-                    .html($("<h1>").text(data.title))
-                    .append($("<p>").text('Type "help" to display the help message again.'));
-
-                var list = $("<ul id=\"chapters\">");
-                $("#feedback").append(list);
-                for (var x in data.info) {
-                    var item = $("<li>").text(data.info[x].title);
-                    list.append(item);
-                    (function (item) {
-                        if (data.info[x].details) {
-                            var details = $("<ul>");
-                            item.append(details);
-                            for (var y in data.info[x].details) {
-                                details.append($("<li>").text(data.info[x].details[y]));
-                            }
-                        }
-                    })(item);
-                }
-            });
-            $("#feedback").fadeIn("slow");
-        });
-    }
     var commands = {
         help : function () {
             $("#feedback").html($("#help").html());
@@ -115,18 +60,12 @@ $(function () {
             return true;
         },
         next : function () {
-            if ( tutorial && tutorial.current < tutorial.steps.length-1 ) {
-                ++tutorial.current;
-                tutorial_step();
-            }
+            tutorial && tutorial.next();
             $("#stdin").val('');
             return true;
         },
         prev : function () {
-            if ( tutorial && tutorial.current > 0 ) {
-                --tutorial.current;
-                tutorial_step();
-            }
+            tutorial && tutorial.prev();
             $("#stdin").val('');
             return true;
         },
@@ -167,7 +106,7 @@ $(function () {
     function send() {
         if (send_enabled == false) return;
         
-        var done = false; 
+        var done = false;
         $.each(commands, function (k, v) {
             var match;
             if (match = new RegExp(k, 'gmi').exec($("#stdin").val())) {
@@ -189,6 +128,11 @@ $(function () {
                 else {
                     $("#stdout").append(format(input, result.stdout + "", ""));
                 }
+
+                if ( tutorial ) {
+                    tutorial.do_step(input);
+                }
+
                 $("#stdout").scrollTo($("#stdout p:last-child"), 300);
             }
         );

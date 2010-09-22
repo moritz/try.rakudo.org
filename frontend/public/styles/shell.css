@@ -92,6 +92,7 @@ textarea {
     font-size: 18px;
     margin: 3px 6px;
     padding: 0;
+    white-space: pre-wrap;
 }
 
 #stdout p.stderr {
@@ -100,10 +101,6 @@ textarea {
     padding: 0 3px 3px;
     color: #332b33;
     border: 2px solid #eb0e20;
-}
-
-#stdout .input, #stdout .output {
-    word-wrap: break-word;
 }
 
 #stdin {
