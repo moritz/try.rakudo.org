@@ -141,7 +141,7 @@ POE::Component::Server::TCP->new(
           }
           if ($input) {
               my $result = $Server::storage->{$ssid}->send($input);
-              $heap->{client}->put(encode('utf8' => $result));
+              $heap->{client}->put($result);
           }
           $heap->{client}->put(">>$ssid<<");
       };

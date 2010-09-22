@@ -13,7 +13,7 @@
                 },
                 {
                     "example": "Bar",
-                    "match" : "Bar"
+                    "match" : "Bar",
                     "explanation": "Parentheses are done before anything else"
                 }
              ]
