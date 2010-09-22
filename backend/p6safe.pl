@@ -1,4 +1,4 @@
-my $*ARGFILES = open '/home/john/Projects/try.rakudo.org/frontend/data/input_text.txt'; 
+my $*ARGFILES = open '../frontend/data/input_text.txt'; 
 
 module Safe { 
     our sub forbidden(*@a, *%h) { die "Operation not permitted in safe mode" };
