@@ -94,16 +94,16 @@ textarea {
     padding: 0;
 }
 
+#stdout p * {
+    word-wrap: break-word;
+}
+
 #stdout p.stderr {
     background: #EB939A;
     margin: 3px 0 3px 0;
     padding: 0 3px 3px;
     color: #332b33;
     border: 2px solid #eb0e20;
-}
-
-#stdout .input, #stdout .output {
-    word-wrap: break-word;
 }
 
 #stdin {
