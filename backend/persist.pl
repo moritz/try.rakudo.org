@@ -52,9 +52,19 @@ while (<$cfg>) {
         my ($self) = shift;
         my $result = '';
         eval {
-            while (my $recv = $self->{p6interp}->recv(5)) {
+            while (1) {
+                my $recv = $self->{p6interp}->recv(5);
+                warn 'y ' . defined $recv;
+                unless (defined $recv) {
+                    warn 'yup';
+                    $result .= "Rakudo REPL has timedout... reaping.\n";
+                    if ($self->{p6interp}->is_active) {
+                        $self->stop;
+                    }
+                    last;
+                }
                 if ($recv =~ /\n>\s$/m){
-                    $recv =~ s/\n>\s$//m;
+                    $recv =~ s/\n>\s$//mg;
                     $result .= $recv . "\n";
                     last;
                 }
@@ -62,7 +72,8 @@ while (<$cfg>) {
                     $result .= $recv . "\n";
                 }
                 if (!$self->{p6interp}->is_active) {
-                    $result .= "Rakudo REPL has closed... restarting\n";
+                    $result .= "Rakudo REPL has closed... restarting.\n";
+                    last;
                 }
             }
         };
@@ -79,7 +90,10 @@ while (<$cfg>) {
             my $pty = IO::Pty::HalfDuplex->new;
             $pty->spawn($perl6);
             
-            while (my $result = $pty->recv(5)) {
+            while (my $result = $pty->recv(15)) {
+                unless (defined $result) {
+                    return "REPL Timeout... trying to reboot.\n";
+                }
                 if ($result =~ />\s$/){
                     last;
                 } 
