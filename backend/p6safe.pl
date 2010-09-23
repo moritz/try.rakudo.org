@@ -26,4 +26,4 @@ Q:PIR {
 
 use FORBID_PIR;
 
-Perl6::Compiler.interactive();
+Perl6::Compiler.interactive(:encoding<utf8>);
