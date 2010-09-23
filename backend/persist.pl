@@ -1,6 +1,7 @@
 use warnings;
 use strict;
 use Encode;
+use Date::Format;
 use POE;
 use POE qw(Component::Server::TCP);
 use Time::HiRes qw(time);
@@ -53,10 +54,8 @@ while (<$cfg>) {
         my $result = '';
         eval {
             while (1) {
-                my $recv = $self->{p6interp}->recv(5);
-                warn 'y ' . defined $recv;
+                my $recv = $self->{p6interp}->recv(15);
                 unless (defined $recv) {
-                    warn 'yup';
                     $result .= "Rakudo REPL has timedout... reaping.\n";
                     if ($self->{p6interp}->is_active) {
                         $self->stop;
@@ -144,7 +143,8 @@ POE::Component::Server::TCP->new(
   Port        => 11211,
   ClientInput => sub {
       my ($heap, $input) = @_[HEAP, ARG0];
-      warn "Received input: $input";
+      my $time = time;
+      warn time2str("%a %b %e %Y %T %S ", $time) . sprintf("%.6f", $time - int($time)) .  " Received input: $input";
       eval {
           my $ssid;
           $input =~ /^id<([^>]+)>\s/m;

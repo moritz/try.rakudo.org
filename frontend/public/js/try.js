@@ -120,9 +120,28 @@ $(function () {
 
         loading();
         var input = $("#stdin").val();
-        $.getJSON('/cmd', "input=" + encodeURIComponent(input),
-            function (result) {
+        $.ajax({
+            type: "GET",
+            url: '/cmd', 
+            data: "input=" + encodeURIComponent(input),
+            dataType: "json",
+            timeout: 35000,
+            error: function (request, txt_status, error) {
+                if (txt_status == 'timeout') {
+                    $("#stdout").append("<p>Request Timeout, the server seems to be unavailable right now.</p>");
+                }
+                else {
+                    alert("A serious error has occured,\nplease file a bug report describing what happened.");
+                }
+
+                $("#stdout").scrollTo($("#stdout p:last-child"), 300);
+            },
+            success: function (result) {
                 done_loading();
+                if (result == null) {
+                    alert("An error has occured on the server.");
+                    return;
+                }
                 if (result['error']) {
                     alert("An error has occured on the server. Error Message:\n\n" + result["error"]);
                     return;
@@ -137,7 +156,7 @@ $(function () {
 
                 $("#stdout").scrollTo($("#stdout p:last-child"), 300);
             }
-        );
+        });
         
         $("#stdin").val("");
     }
