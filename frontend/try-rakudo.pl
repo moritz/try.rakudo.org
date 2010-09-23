@@ -36,32 +36,35 @@ get '/cmd' => sub {
                 PeerPort => 11211)
             or die "Cannot connect to Rakudo Eval Server";
         $remote->autoflush(1);
-        $remote->timeout( 15 );
         
         my $input = $self->param('input');
         my $id = $self->session->{sess_id};
         my $end = qr/>>$id<</;
-
-        eval {
-            $input =~ s/\n//m;
-            my $msg = "id<$id> $input\n";
-            print $remote encode('utf8' => $msg);
-            while (<$remote>) {
-                app->log->debug($msg);
-                $_ =~ s/^[ ]+//;
-                $_ =~ s/[ ]+$//;
-                last if m/$end/;
-                $result .= $_;
-            }
-        };
-        if ($@) { 
-            app->log->warn("Got an error, $! $@");
+    
+        local $SIG{ALRM} = sub { die "Timeout, operation took to long.\n" };
+        alarm 30;
+        $input =~ s/\n//m;
+        my $msg = "id<$id> $input\n";
+        print $remote encode('utf8' => $msg);
+        while (<$remote>) {
+            app->log->debug($msg);
+            $_ =~ s/^[ ]+//;
+            $_ =~ s/[ ]+$//;
+            last if m/$end/;
+            $result .= $_;
         }
+        alarm 0;
+        
         close $remote;
     };
     if ($@) {
+        app->log->debug("Timeout!, $! $@") if $@ eq "Timeout, operation took to long.\n";
         app->log->warn("Got an error, $! $@");
-        return $self->render_json({error => $@});
+        my $escaped_error  = Mojo::ByteStream->new($@);
+        my $escaped_result = Mojo::ByteStream->new(decode('utf8' => $result));        
+        return $self->render_json({error  => $escaped_error->xml_escape->to_string,
+                                   stdout => $escaped_result->xml_escape->to_string,
+                                   stdin  => $self->param('intput')});
     }
     else {
         my $escaped_result = Mojo::ByteStream->new(decode('utf8' => $result));

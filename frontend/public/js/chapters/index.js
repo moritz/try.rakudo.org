@@ -5,111 +5,111 @@
             "title": "Chapter 1 - Math",
             "details": [
                 "Basic Infix",
-                "List Ops",
-                "Advanced Ops" 
-            ] 
+                "List Operators",
+                "Advanced Operators"
+            ]
         },
         {
             "title": "Chapter 2 - Variables, Scalar Objects",
             "details": [
                 "Scalars",
                 "Strings",
-                "Regex's as Scalars",
-                "Scoping" 
-            ] 
+                "Regexes as Scalars",
+                "Scoping"
+            ]
         },
         {
             "title": "Chapter 3 - Containers",
             "details": [
                 "Lists",
-                "Hases" 
-            ] 
+                "Hashes"
+            ]
         },
         {
             "title": "Chapter 4 - Flow Control",
             "details": [
-                "Looping Constructs: for, loop, while",
-                "break, continue, next, last" 
-            ] 
+                "Looping Constructs: `for`, `loop`, `while`",
+                "Escaping from Loops: `break`, `continue`, `next`, `last`"
+            ]
         },
         {
             "title": "Chapter 5 - Regular Expressions",
             "details": [
                 "Syntax",
                 "Modifiers",
-                "Explain Syntax differences from perl5 and pcre",
-                "Protoregex, LTM" 
-            ] 
+                "Differences from Perl 5 and PCRE",
+                "Protoregex, LTM"
+            ]
         },
         {
             "title": "Chapter 6 - Advanced Variables",
             "details": [
                 "Hashes",
                 "Subsets",
-                "Types Constraints",
+                "Type Constraints",
                 "Static Typing",
-                "Twigils" 
-            ] 
+                "Twigils"
+            ]
         },
         {
             "title": "Chapter 7 - Functions",
             "details": [
-                "Declarations ",
+                "Declarations",
                 "Prototypes",
-                "Arguments" 
-            ] 
+                "Arguments"
+            ]
         },
         {
             "title": "Chapter 8 - Advanced Flow Control",
             "details": [
                 "Phasers",
-                "gather/take" 
-            ] 
+                "`gather` and `take`"
+            ]
         },
         {
             "title": "Chapter 9 - Modules",
             "details": [
                 "Namespaces",
-                "Exporting" 
-            ] 
+                "Exporting"
+            ]
         },
         {
             "title": "Chapter 10 - Classes",
             "details": [
-                "Class definition",
-                "method, submethods",
-                "Object Construction" 
-            ] 
+                "Class Definition",
+                "`method` and `submethod`",
+                "Object Construction"
+            ]
         },
         {
             "title": "Chapter 11 - Advanced Functions",
             "details": [
                 "Multi-methods",
-                "Defining Custom Operators (eg. sub infix:<x> { ... })" 
-            ] 
+                "Defining Custom Operators (e.g. `sub infix:<x> { ... }`)"
+            ]
         },
         {
             "title": "Chapter 12 - Exceptions",
             "details": [
-                "try { ... }",
-                "CATCH { ... }"
-            ] 
+                "`try { ... }`",
+                "`CATCH { ... }`"
+            ]
         },
         {
             "title": "Chapter 13 - Roles",
             "details": [
-                "Role definition",
-                "does and but ",
-                "Object Composition" 
-            ] 
+                "Role Definition",
+                "`does` and `but`",
+                "Object Composition"
+            ]
         },
         {
             "title": "Chapter 14 - Grammars",
             "details": [
-                "Defintiion",
+                "Definition",
                 "Tokens",
-                "Rules" 
-            ] 
-        } 
-    ] 
+                "Rules"
+            ]
+        }
+    ]
 }

@@ -41,53 +41,34 @@ $(function () {
         
         return result;
     }
-    
-    function load_chapter(id) {
-        $("#feedback").fadeOut('slow', function () {
-            $("#stdout").html("");
-            $.getJSON('/frontend/data/chapters/index.js', function (data) {
-                $("#feedback").html($("<h1>").text(data.title));
-                if (data.steps) {
-                
-                }
-                else if (data.info) {
-                    var list = $("<ul>");
-                    $("#feedback").append(list)
-                    for (var x in data.info) {
-                        var item = $("<li>").text(data.info[x].title);
-                        list.append(item);
-                        (function (item) {
-                            if (data.info[x].details) {
-                                var details = $("<ul>");
-                                item.append(details);
-                                for (var y in data.info[x].details) {
-                                    details.append($("<li>").text(data.info[x].details[y]));
-                                }
-                            }
-                        })(item);
-                    }
-                }
-            });
-            $("#feedback").fadeIn("slow");
-        });
-    }
+
     var commands = {
         help : function () {
             $("#feedback").html($("#help").html());
+            $("#stdin").val('');
             return true;
         },
         'chapter (\\d+|index)' : function (match) {
             $("#stdin").val('');
-            load_chapter(match[1]);
+            // Display chapter index if not already visible
+            if ( match[1] == 'index' ) {
+                load_tutorial_index();
+            }
+            if ( match[1] != 'index' ) {
+                load_chapter(match[1]);
+            }
             return true;
         },
         next : function () {
-            alert("next");
+            tutorial && tutorial.next();
             $("#stdin").val('');
+            $("#stdout").scrollTo($("#stdout p:last-child"), 300);
             return true;
         },
         prev : function () {
+            tutorial && tutorial.prev();
             $("#stdin").val('');
+            $("#stdout").scrollTo($("#stdout p:last-child"), 300);
             return true;
         },
         clear : function () {
@@ -127,7 +108,7 @@ $(function () {
     function send() {
         if (send_enabled == false) return;
         
-        var done = false; 
+        var done = false;
         $.each(commands, function (k, v) {
             var match;
             if (match = new RegExp(k, 'gmi').exec($("#stdin").val())) {
@@ -136,12 +117,31 @@ $(function () {
         });
         
         if (done) return;
-        
+
         loading();
         var input = $("#stdin").val();
-        $.getJSON('/cmd', "input=" + encodeURIComponent(input),
-            function (result) {
+        $.ajax({
+            type: "GET",
+            url: '/cmd', 
+            data: "input=" + encodeURIComponent(input),
+            dataType: "json",
+            timeout: 35000,
+            error: function (request, txt_status, error) {
+                if (txt_status == 'timeout') {
+                    $("#stdout").append("<p>Request Timeout, the server seems to be unavailable right now.</p>");
+                }
+                else {
+                    alert("A serious error has occured,\nplease file a bug report describing what happened.");
+                }
+
+                $("#stdout").scrollTo($("#stdout p:last-child"), 300);
+            },
+            success: function (result) {
                 done_loading();
+                if (result == null) {
+                    alert("An error has occured on the server.");
+                    return;
+                }
                 if (result['error']) {
                     alert("An error has occured on the server. Error Message:\n\n" + result["error"]);
                     return;
@@ -149,9 +149,14 @@ $(function () {
                 else {
                     $("#stdout").append(format(input, result.stdout + "", ""));
                 }
+
+                if ( tutorial ) {
+                    tutorial.do_step(input);
+                }
+
                 $("#stdout").scrollTo($("#stdout p:last-child"), 300);
             }
-        );
+        });
         
         $("#stdin").val("");
     }
@@ -172,7 +177,7 @@ $(function () {
 
         var linecount = 0;
         $.each(str.split("\n"), function(k, l) {
-          linecount += Math.ceil( (this.length + 1) / cols );
+            linecount += Math.ceil( (this.length + 1) / cols );
         });
         
         $(this).attr('rows', linecount < 3 ? 3 : linecount + 1);
@@ -183,3 +188,4 @@ $(function () {
     $("#send_btn").height($("#stdin").height());
     $("#stdin").focus();
 });
+

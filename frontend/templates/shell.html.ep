@@ -8,6 +8,7 @@
   <link rel="shortcut icon" type="image/x-icon" href="/images/fav.ico" />
   <script type="text/javascript" src="/js/jquery-1.4.2.min.js"></script>
   <script type="text/javascript" src="/js/jquery.scrollTo-1.4.2.js"></script>
+  <script type="text/javascript" src="/js/tutor.js"></script>
   <script type="text/javascript" src="/js/try.js"></script>
  </head>
  <body>
@@ -38,7 +39,7 @@
             </div>
         </div>
         <div id="abs_footer">
-            <p>If you encounter a bug please file a bug please help by filling a bug report on the <a href="http://github.com/moritz/try.rakudo.org/issues">github bug tracker</a>. Thank you</p>
+            <p>If you encounter a bug please file a bug report at the <a href="http://github.com/moritz/try.rakudo.org/issues">github bug tracker</a>, Thank You!</p>
             <p>Made possible by the folks that brought you Rakudo.</p>
         </div>
     </div>
@@ -68,7 +69,6 @@
                         <li>Resets the console</li>
                     </ul>
                 </li>
-                <!--
                 <li>chapter index
                     <ul>
                         <li>Lists an index of the tutorials</li>
@@ -79,6 +79,7 @@
                         <li>Goes to chapter # of the tutorial, where # is a number</li>
                     </ul>
                 </li>
+                <!--
                 <li>help /&lt;term&gt;/
                     <ul>
                         <li>Looks up a term</li>

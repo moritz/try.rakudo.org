@@ -1,6 +1,7 @@
 use warnings;
 use strict;
 use Encode;
+use Date::Format;
 use POE;
 use POE qw(Component::Server::TCP);
 use Time::HiRes qw(time);
@@ -52,9 +53,17 @@ while (<$cfg>) {
         my ($self) = shift;
         my $result = '';
         eval {
-            while (my $recv = $self->{p6interp}->recv(5)) {
+            while (1) {
+                my $recv = $self->{p6interp}->recv(15);
+                unless (defined $recv) {
+                    $result .= "Rakudo REPL has timedout... reaping.\n";
+                    if ($self->{p6interp}->is_active) {
+                        $self->stop;
+                    }
+                    last;
+                }
                 if ($recv =~ /\n>\s$/m){
-                    $recv =~ s/\n>\s$//m;
+                    $recv =~ s/\n>\s$//mg;
                     $result .= $recv . "\n";
                     last;
                 }
@@ -62,7 +71,8 @@ while (<$cfg>) {
                     $result .= $recv . "\n";
                 }
                 if (!$self->{p6interp}->is_active) {
-                    $result .= "Rakudo REPL has closed... restarting\n";
+                    $result .= "Rakudo REPL has closed... restarting.\n";
+                    last;
                 }
             }
         };
@@ -79,7 +89,10 @@ while (<$cfg>) {
             my $pty = IO::Pty::HalfDuplex->new;
             $pty->spawn($perl6);
             
-            while (my $result = $pty->recv(5)) {
+            while (my $result = $pty->recv(15)) {
+                unless (defined $result) {
+                    return "REPL Timeout... trying to reboot.\n";
+                }
                 if ($result =~ />\s$/){
                     last;
                 } 
@@ -130,7 +143,8 @@ POE::Component::Server::TCP->new(
   Port        => 11211,
   ClientInput => sub {
       my ($heap, $input) = @_[HEAP, ARG0];
-      warn "Received input: $input";
+      my $time = time;
+      warn time2str("%a %b %e %Y %T %S ", $time) . sprintf("%.6f", $time - int($time)) .  " Received input: $input";
       eval {
           my $ssid;
           $input =~ /^id<([^>]+)>\s/m;
@@ -141,7 +155,7 @@ POE::Component::Server::TCP->new(
           }
           if ($input) {
               my $result = $Server::storage->{$ssid}->send($input);
-              $heap->{client}->put(encode('utf8' => $result));
+              $heap->{client}->put($result);
           }
           $heap->{client}->put(">>$ssid<<");
       };
