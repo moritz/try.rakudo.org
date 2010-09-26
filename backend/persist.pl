@@ -79,7 +79,9 @@ while (<$cfg>) {
         if ( $@ ) {
             die "failed to gather a result $@";
         }
-        
+
+	# Remove script filename from error output (let the user think its a buffer)
+	$result =~ s/\(.*:(\d*)\)$/\(line $1\)/;        
         return $result;
     }
     
