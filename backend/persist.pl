@@ -6,9 +6,23 @@ use POE;
 use POE qw(Component::Server::TCP);
 use Time::HiRes qw(time);
 
+my $started = 0;
 my $timeout = 60 * 10; # in seconds
 
 open(my $cfg, '<', '.config') or die $!;
+
+if (-e 'persist.pid') {
+    die "REPL Server already started";
+    exit 0;
+}
+else {
+    $started = 1;
+    open(my $pid, '>', 'persist.pid') or die $!;
+    print $pid "$$\n";
+}
+END {
+    unlink('./persist.pid') if $started;
+}
 
 my $perl6;
 while (<$cfg>) {
