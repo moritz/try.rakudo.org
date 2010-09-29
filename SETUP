@@ -1,0 +1,29 @@
+CPAN dependencies:
+    Web Server: Mojolicious, IO::Socket
+   REPL Server: POE, IO::Pty::HalfDuplex, Time::HiRes, Date::Format
+
+
+To configure the REPL Server you need to have a .config file in the directory
+you will run the REPL Server from. 
+
+My REPL Server config was generated with: 
+
+    echo "`which perl6` `pwd`/p6safe.pl" >> .config
+
+It should contain: 
+
+   /path/to/perl6 /path/to/p6safe.pl
+
+The path to the input text inside p6safe.pl might need to be 
+modified if you move any of the files around, in that case
+the first line of p6safe.pl contains the path to the file and
+you should only need to correct that one file path.
+
+
+The web server can be run by doing:
+
+   perl try-rakudo.pl daemon
+
+This will run a basic web server on localhost:3000. For more
+details on configuring the web server please referrer to the 
+Mojolicious documentation.

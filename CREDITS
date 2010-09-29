@@ -1,0 +1,35 @@
+=pod
+
+    Following in the steps of other open source projects that
+    eventually take over the world, here is the partial list
+    of people who have contributed to try.rakudo.org and its 
+    supporting works.  It is sorted by name and formatted to 
+    allow easy grepping and beautification by scripts.
+    The fields are: name (N), email (E), web-address (W),
+    description (D), git username (U) and snail-mail
+    address (S). Please try to keep them sorted alphabetically
+    by first name.
+
+        Thanks,
+
+        try.rakudo.org Developers
+        PS: Yes, this looks remarkably like the Linux CREDITS format
+        PPS: This file is encoded in UTF-8
+
+----------
+
+
+u: flussence
+n: Anthony Parsons
+
+u: cygx
+
+u: ashgti
+u: ash_
+n: John Harrison
+e: ash.git at gmail.com
+
+u: torehaug
+n: Tore Haugland
+
+=cut

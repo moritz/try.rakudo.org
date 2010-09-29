@@ -1,5 +1,0 @@
-RewriteEngine on
-RewriteRule ^$ cgi/shell.pl
-RewriteRule ^send$ cgi/send.pl
-RewriteRule ^receive$ cgi/receive.pl
-RewriteRule ^status$ cgi/status.pl

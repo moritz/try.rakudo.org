@@ -5,7 +5,6 @@
             "title": "Chapter 1 - Math",
             "details": [
                 "Basic Infix",
-                "List Operators",
                 "Advanced Operators"
             ]
         },
@@ -22,6 +21,7 @@
             "title": "Chapter 3 - Containers",
             "details": [
                 "Lists",
+                "List Operators",
                 "Hashes"
             ]
         },

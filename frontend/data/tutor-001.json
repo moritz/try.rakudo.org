@@ -1,8 +1,0 @@
-({
-	title : 'Lesson 1: Misc Stuff'
-	steps : [
-		'type 1 + 1',
-		'type 1 + 2 * 3',
-		'type "abc" x 5'
-	]
-})
