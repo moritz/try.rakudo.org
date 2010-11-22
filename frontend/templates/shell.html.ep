@@ -88,10 +88,10 @@
                 -->
                 <li>And some helpful links for anyone interested in Rakudo Perl 6
                     <ul>
+                        <li><a href="http://perl6.org/documentation/">Perl 6 Documentation</a></li>
                         <li><a href="http://perlcabal.org/syn/">Perl 6 Specification</a></li>
                         <li><a href="http://rakudo.org/how-to-get-rakudo">How to get Rakudo Perl 6</a></li>
                         <li><a href="http://www.rakudo.org/">Rakudo Official Website</a></li>
-                        <li><a href="http://perl6advent.wordpress.com/">Perl 6 Advent Calendar</a></li>
                     </ul>
                 </li>
             </ul>
