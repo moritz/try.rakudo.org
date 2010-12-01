@@ -33,7 +33,12 @@ tutor.fn.show_step = function (step) {
         );
 }
 tutor.fn.do_step = function (input) {
-    if ( new RegExp(this.steps[this.step-1].match).exec(input) ) {
+    var regex = this.steps[this.step-1].match;
+    if ( regex instanceof Array ) {
+        regex = regex.join('\\s*');
+    }
+
+    if ( new RegExp(regex).exec(input) ) {
         this.next();
     }
 }
