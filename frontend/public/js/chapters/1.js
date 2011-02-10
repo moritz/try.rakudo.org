@@ -8,12 +8,12 @@
                 },
                 {
                     "example": "10 - 2 * 4",
-                    "example": ["10", "\\-", "2", "\\*", "4"],
+                    "match": ["10", "\\-", "2", "\\*", "4"],
                     "explanation": "Multiply/divide are done before add/subtract"
                 },
                 {
                     "example": "(10 - 2) * 4",
-                    "example": ["(", "10", "\\-", "2", ")", "\\*", "4"],
+                    "match": ["(", "10", "\\-", "2", ")", "\\*", "4"],
                     "explanation": "Parentheses are done before anything else"
                 }
              ]
