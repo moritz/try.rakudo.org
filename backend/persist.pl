@@ -1,30 +1,35 @@
+#!/usr/bin/env perl
+use 5.010;
 use warnings;
 use strict;
+use autodie;
+
 use Encode;
 use Date::Format;
-use POE;
 use POE qw(Component::Server::TCP);
 use Time::HiRes qw(time);
 
 my $started = 0;
 my $timeout = 60 * 10; # in seconds
 
-open(my $cfg, '<', '.config') or die $!;
+open(my $cfg, '<', '.config');
 
-if (-e 'persist.pid') {
+if ( -e 'persist.pid' and kill 0, qx(cat persist.pid) ) {
     die "REPL Server already started";
     exit 0;
 }
-else {
-    $started = 1;
-    open(my $pid, '>', 'persist.pid') or die $!;
-    print $pid "$$\n";
-}
+
+$started = 1;
+open(my $pid, '>', 'persist.pid');
+print $pid "$$\n";
+
 END {
-    unlink('./persist.pid') if $started;
+    unlink('persist.pid') if $started;
 }
 
-my $perl6;
+# .config should be a single line containing the perl6 command to use.
+# This default might work for you though.
+my $perl6 = 'perl6 p6safe.pl';
 while (<$cfg>) {
     $_ =~ s/^\s+//;
     $_ =~ s/\s+$//;
