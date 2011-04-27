@@ -25,6 +25,9 @@ should be a single line of the form:
 All the other code in the backend uses relative file paths, so you'll likely
 want to start the backend from inside there in order for anything to work.
 
+If the backend refuses to start and complains it's already running when it
+clearly isn't, delete the `persist.pid` file.
+
 # Frontend:
 
 The web server can be run standalone by going to the `frontend` directory and
