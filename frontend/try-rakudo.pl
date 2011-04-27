@@ -28,20 +28,25 @@ get '/cmd' => sub {
     my $result = '';
     $self->session(sess_id => sha1_hex(time + rand)) 
         unless $self->session('sess_id');
-    
+
+    my %errors = (
+        connect => 'Cannot connect to Rakudo eval server',
+        timeout => "Timeout, operation took too long.\n",
+    );
+
     eval {
         my $remote = IO::Socket::INET->new(
-                Proto    => "tcp",
-                PeerAddr => "localhost",
-                PeerPort => 11211)
-            or die "Cannot connect to Rakudo Eval Server";
+                Proto    => 'tcp',
+                PeerAddr => 'localhost',
+                PeerPort => 11211
+        ) or die "$errors{connect}: $@";
         $remote->autoflush(1);
         
         my $input = $self->param('input');
         my $id = $self->session->{sess_id};
         my $end = qr/>>$id<</;
-    
-        local $SIG{ALRM} = sub { die "Timeout, operation took to long.\n" };
+
+        local $SIG{ALRM} = sub { die $errors{timeout} };
         alarm 30;
         $input =~ s/\n//m;
         my $msg = "id<$id> $input\n";
@@ -58,7 +63,7 @@ get '/cmd' => sub {
         close $remote;
     };
     if ($@) {
-        app->log->debug("Timeout!, $! $@") if $@ eq "Timeout, operation took to long.\n";
+        app->log->debug("Timeout!, $!") if $@ eq $errors{timeout};
         app->log->warn("Got an error, $! $@");
         my $escaped_error  = Mojo::ByteStream->new($@);
         my $escaped_result = Mojo::ByteStream->new(decode('utf8' => $result));        
