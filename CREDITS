@@ -2,8 +2,8 @@
 
     Following in the steps of other open source projects that
     eventually take over the world, here is the partial list
-    of people who have contributed to try.rakudo.org and its 
-    supporting works.  It is sorted by name and formatted to 
+    of people who have contributed to try.rakudo.org and its
+    supporting works.  It is sorted by name and formatted to
     allow easy grepping and beautification by scripts.
     The fields are: name (N), email (E), web-address (W),
     description (D), git username (U) and snail-mail

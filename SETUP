@@ -1,29 +1,39 @@
-CPAN dependencies:
-    Web Server: Mojolicious, IO::Socket
-   REPL Server: POE, IO::Pty::HalfDuplex, Time::HiRes, Date::Format
+# CPAN dependencies:
 
+- Web Server:
+    * Mojolicious
+    * IO::Socket
+- REPL Server:
+    * POE
+    * IO::Pty::HalfDuplex
+    * Time::HiRes
+    * Date::Format
 
-To configure the REPL Server you need to have a .config file in the directory
-you will run the REPL Server from. 
+# Backend:
 
-My REPL Server config was generated with: 
+First of all, go to the `backend` directory and try running:
 
-    echo "`which perl6` `pwd`/p6safe.pl" >> .config
+    perl persist.pl
 
-It should contain: 
+If the program just sits there doing apparently nothing (and listening on port
+11211), then it's working. If it spits out an error then you probably need a
+backend.conf file to tell it where your perl6 binary and p6safe.pl are. This
+should be a single line of the form:
 
    /path/to/perl6 /path/to/p6safe.pl
 
-The path to the input text inside p6safe.pl might need to be 
-modified if you move any of the files around, in that case
-the first line of p6safe.pl contains the path to the file and
-you should only need to correct that one file path.
+All the other code in the backend uses relative file paths, so you'll likely
+want to start the backend from inside there in order for anything to work.
 
+# Frontend:
 
-The web server can be run by doing:
+The web server can be run standalone by going to the `frontend` directory and
+running:
 
    perl try-rakudo.pl daemon
 
-This will run a basic web server on localhost:3000. For more
-details on configuring the web server please referrer to the 
-Mojolicious documentation.
+This will run a basic web server on localhost:3000. For more details on
+configuring the web server please refer to the Mojolicious documentation.
+There's an example Apache config file in the `doc` directory.
+
+<!-- vim: set filetype=markdown textwidth=80: -->
