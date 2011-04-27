@@ -1,6 +1,7 @@
 #!/usr/bin/env perl6
 use v6;
-my $*ARGFILES = open 'data/input_text.txt';
+my $backend_dir = '.';
+my $*ARGFILES = open "$backend_dir/data/input_text.txt";
 
 module Safe {
     our sub forbidden(*@a, *%h) { die "Operation not permitted in safe mode" };

@@ -9,37 +9,51 @@ use Date::Format;
 use POE qw(Component::Server::TCP);
 use Time::HiRes qw(time);
 
+use constant backend_dir => '.';
+use constant {
+    default_cmd => 'perl6 p6safe.pl',
+    config_file => backend_dir . '/backend.conf',
+    pid_file    => backend_dir . '/persist.pid',
+};
+
+sub file_contents {
+    my $file = shift;
+
+    return undef unless -e $file;
+    open(my $fh, '<', $file);
+    chomp(my $line = <$fh>);
+    $line =~ s/^\s+//;
+
+    return $line;
+}
+
 my $started = 0;
 my $timeout = 60 * 10; # in seconds
 
-open(my $cfg, '<', '.config');
+if ( my $pid = file_contents(pid_file) ) {
+    die "REPL server already started as PID $pid" if kill(0, $pid);
+}
 
-if ( -e 'persist.pid' and kill 0, qx(cat persist.pid) ) {
-    die "REPL Server already started";
-    exit 0;
+{
+    open(my $pid_fh, '>', pid_file);
+    say {$pid_fh} $$;
 }
 
 $started = 1;
-open(my $pid, '>', 'persist.pid');
-print $pid "$$\n";
 
 END {
-    unlink('persist.pid') if $started;
+    unlink(pid_file) if $started;
 }
 
-# .config should be a single line containing the perl6 command to use.
-# This default might work for you though.
-my $perl6 = 'perl6 p6safe.pl';
-while (<$cfg>) {
-    $_ =~ s/^\s+//;
-    $_ =~ s/\s+$//;
-
-    $perl6 = $_;
+# backend.conf should be a single line containing the perl6 command to use.
+# The default might work for you though.
+my $perl6_cmd = default_cmd;
+if ( my $config = file_contents(config_file) ) {
+    $perl6_cmd = $config;
 }
 
 {
     package P6Interp;
-    use Time::HiRes qw(time);
     use IO::Pty::HalfDuplex;
 
     sub new {
@@ -50,7 +64,7 @@ while (<$cfg>) {
         my $pty;
         eval {
             $pty = IO::Pty::HalfDuplex->new;
-            $pty->spawn($perl6);
+            $pty->spawn($perl6_cmd);
 
             while (my $result = $pty->recv(5)) {
                 if ($result =~ />\s$/){
@@ -69,18 +83,19 @@ while (<$cfg>) {
     }
 
     sub gather_result {
-        my ($self) = shift;
+        my $self = shift;
         my $result = '';
         eval {
             while (1) {
                 my $recv = $self->{p6interp}->recv(15);
                 unless (defined $recv) {
-                    $result .= "Rakudo REPL has timedout... reaping.\n";
+                    $result .= "Rakudo REPL has timed out... reaping.\n";
                     if ($self->{p6interp}->is_active) {
                         $self->stop;
                     }
                     last;
                 }
+
                 if ($recv =~ /\n>\s$/m){
                     $recv =~ s/\n>\s$//mg;
                     $result .= $recv . "\n";
@@ -89,13 +104,14 @@ while (<$cfg>) {
                 else {
                     $result .= $recv . "\n";
                 }
+
                 if (!$self->{p6interp}->is_active) {
                     $result .= "Rakudo REPL has closed... restarting.\n";
                     last;
                 }
             }
         };
-        if ( $@ ) {
+        if ($@) {
             die "failed to gather a result $@";
         }
 
@@ -109,7 +125,7 @@ while (<$cfg>) {
         my ($self, $command) = @_;
         if (!$self->{p6interp}->is_active) {
             my $pty = IO::Pty::HalfDuplex->new;
-            $pty->spawn($perl6);
+            $pty->spawn($perl6_cmd);
 
             while (my $result = $pty->recv(15)) {
                 unless (defined $result) {
@@ -129,15 +145,18 @@ while (<$cfg>) {
     }
 
     sub stop {
-        my ($self) = shift;
+        my $self = shift;
 
-        eval {
-            $self->{p6interp}->kill;
-        };
-        if ($@) {
-            die "$@";
-        }
+        $self->{p6interp}->kill;
     }
+
+    1;
+}
+
+{
+    package Server;
+    our $storage = {};
+    1;
 }
 
 POE::Session->create(
@@ -161,36 +180,31 @@ POE::Session->create(
 );
 
 POE::Component::Server::TCP->new(
-  Alias       => "rakudo_eval",
-  Port        => 11211,
-  ClientInput => sub {
-      my ($heap, $input) = @_[HEAP, ARG0];
-      my $time = time;
-      warn time2str("%a %b %e %Y %T %S ", $time) . sprintf("%.6f", $time - int($time)) .  " Received input: $input";
-      eval {
-          my $ssid;
-          $input =~ /^id<([^>]+)>\s/m;
-          $ssid = $1;
-          $input =~ s/^id<([^>]+)>\s//m;
-          unless ($Server::storage->{$ssid}) {
-              $Server::storage->{$ssid} = P6Interp->new;
-          }
-          if ($input) {
-              my $result = $Server::storage->{$ssid}->send($input);
-              $heap->{client}->put($result);
-          }
-          $heap->{client}->put(">>$ssid<<");
-      };
-      if ( $@ ) {
-          $heap->{client}->put("ERROR: $@");
-      }
-  }
+    Alias       => 'rakudo_eval',
+    Port        => 11211,
+    ClientInput => sub {
+        my ($heap, $input) = @_[HEAP, ARG0];
+        warn time2str('%Y-%m-%d %T', time) . " Received input: '$input'";
+        eval {
+            my $ssid;
+            $input =~ /^id<([^>]+)>\s/m;
+            $ssid = $1;
+            $input =~ s/^id<([^>]+)>\s//m;
+
+            $Server::storage->{$ssid} ||= P6Interp->new;
+
+            if ($input) {
+                my $result = $Server::storage->{$ssid}->send($input);
+                $heap->{client}->put($result);
+            }
+            $heap->{client}->put(">>$ssid<<");
+        };
+        if ( $@ ) {
+            $heap->{client}->put("ERROR: $@");
+        }
+    }
 );
 
 POE::Kernel->run();
+
 exit 0;
-
-package Server;
-
-our $storage = {};
-
