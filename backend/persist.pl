@@ -33,41 +33,41 @@ my $perl6 = 'perl6 p6safe.pl';
 while (<$cfg>) {
     $_ =~ s/^\s+//;
     $_ =~ s/\s+$//;
-    
+
     $perl6 = $_;
 }
 
-{    
+{
     package P6Interp;
     use Time::HiRes qw(time);
     use IO::Pty::HalfDuplex;
-    
+
     sub new {
         my $proto = shift;
         my $class = ref($proto) || $proto;
         my $self  = {};
-        
+
         my $pty;
         eval {
             $pty = IO::Pty::HalfDuplex->new;
             $pty->spawn($perl6);
-            
+
             while (my $result = $pty->recv(5)) {
                 if ($result =~ />\s$/){
                     last;
-                } 
+                }
             }
-            
+
             $self->{p6interp} = $pty;
         };
         if ( $@ ) {
             die $@;
         }
-        
+
         bless ($self, $class);
         return $self;
     }
-    
+
     sub gather_result {
         my ($self) = shift;
         my $result = '';
@@ -104,22 +104,22 @@ while (<$cfg>) {
 
         return $result;
     }
-    
+
     sub send {
         my ($self, $command) = @_;
         if (!$self->{p6interp}->is_active) {
             my $pty = IO::Pty::HalfDuplex->new;
             $pty->spawn($perl6);
-            
+
             while (my $result = $pty->recv(15)) {
                 unless (defined $result) {
                     return "REPL Timeout... trying to reboot.\n";
                 }
                 if ($result =~ />\s$/){
                     last;
-                } 
+                }
             }
-            
+
             $self->{p6interp} = $pty;
         }
         $self->{time} = time + $timeout;
@@ -127,10 +127,10 @@ while (<$cfg>) {
         my $result = $self->gather_result;
         return $result;
     }
-    
+
     sub stop {
         my ($self) = shift;
-        
+
         eval {
             $self->{p6interp}->kill;
         };
@@ -145,11 +145,11 @@ POE::Session->create(
         _start => sub {
             $_[KERNEL]->delay(tick => 15);
         },
-        
+
         tick => sub {
             while (my ($k, $v) = each %$Server::storage) {
                 my $last_used = $v->{time};
-                
+
                 if ($v->{time} && $v->{time} < time) {
                     $v->stop;
                     delete $Server::storage->{$k};

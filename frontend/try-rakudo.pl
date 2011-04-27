@@ -9,24 +9,24 @@ use Digest::SHA1 qw(sha1_hex);
 
 get '/shell' => sub {
     my $self = shift;
-    return $self->redirect_to('http://try.rakudo.org/'); 
+    return $self->redirect_to('http://try.rakudo.org/');
 };
 
 get '/' => sub {
     my $self = shift;
     my $txt = $self->param('input');
-    
-    $self->session(sess_id => sha1_hex(time + rand)) 
+
+    $self->session(sess_id => sha1_hex(time + rand))
         unless $self->session('sess_id');
-    
-    return $self->render(template => 'shell', 
+
+    return $self->render(template => 'shell',
                          txt => $txt);
 };
 
 get '/cmd' => sub {
     my $self = shift;
     my $result = '';
-    $self->session(sess_id => sha1_hex(time + rand)) 
+    $self->session(sess_id => sha1_hex(time + rand))
         unless $self->session('sess_id');
 
     my %errors = (
@@ -41,7 +41,7 @@ get '/cmd' => sub {
                 PeerPort => 11211
         ) or die "$errors{connect}: $@";
         $remote->autoflush(1);
-        
+
         my $input = $self->param('input');
         my $id = $self->session->{sess_id};
         my $end = qr/>>$id<</;
@@ -59,22 +59,22 @@ get '/cmd' => sub {
             $result .= $_;
         }
         alarm 0;
-        
+
         close $remote;
     };
     if ($@) {
         app->log->debug("Timeout!, $!") if $@ eq $errors{timeout};
         app->log->warn("Got an error, $! $@");
         my $escaped_error  = Mojo::ByteStream->new($@);
-        my $escaped_result = Mojo::ByteStream->new(decode('utf8' => $result));        
+        my $escaped_result = Mojo::ByteStream->new(decode('utf8' => $result));
         return $self->render_json({error  => $escaped_error->xml_escape->to_string,
                                    stdout => $escaped_result->xml_escape->to_string,
                                    stdin  => $self->param('intput')});
     }
     else {
         my $escaped_result = Mojo::ByteStream->new(decode('utf8' => $result));
-        return $self->render_json({stdout => $escaped_result->xml_escape->to_string, 
-                                   stdin => $self->param('input')});
+        return $self->render_json({stdout => $escaped_result->xml_escape->to_string,
+                                   stdin  => $self->param('input')});
     }
 };
 
