@@ -14,8 +14,8 @@ h1 {
 
 h1 img {
 	position: absolute;
-	right: -140px;
-	bottom: -80px;
+	right: -125px;
+	bottom: -150px;
 }
 
 pre {
@@ -35,7 +35,6 @@ textarea {
 #camelia {
     z-index: 2;
     position: absolute;
-    top: -60px;
 }
 
 #content {
@@ -67,12 +66,14 @@ textarea {
 
 #console {
     position: relative;
+    z-index: 2;
 }
 
 #stdout {
-    border: 3px solid #1C303E;
+    border: 2px solid #1C303E;
     border-bottom: none;
     background: #274458;
+    background-color: rgba(0, 0, 0, 0.7);
     color: #E1EFFF;
     height: 300px;
     overflow: auto;
@@ -82,8 +83,6 @@ textarea {
     border-top-right-radius: 1em;
     -moz-border-radius-topright: 1em;
     -webkit-border-top-right-radius: 1em;
-    -moz-box-shadow: 5px 5px 10px #8ECFFF;
-    -webkit-box-shadow: 5px 5px 10px #8ECFFF;
     resize: vertical;
 }
 
@@ -119,8 +118,6 @@ textarea {
     border-bottom-left-radius: 1em;
     -moz-border-radius-bottomleft: 1em;
     -webkit-border-bottom-left-radius: 1em;
-    -moz-box-shadow: 5px 5px 10px #8ECFFF;
-    -webkit-box-shadow: 5px 5px 10px #8ECFFF;
     outline: none; /* Chrome's focus ring sticks out of the bottom left curve */
 }
 
@@ -143,8 +140,6 @@ textarea {
     border-bottom-right-radius: 1em;
     -moz-border-radius-bottomright: 1em;
     -webkit-border-bottom-right-radius: 1em;
-    -moz-box-shadow: 5px 5px 10px #8ECFFF;
-    -webkit-box-shadow: 5px 5px 10px #8ECFFF;
     cursor: pointer;
 }
 
