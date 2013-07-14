@@ -67,13 +67,13 @@ get '/cmd' => sub {
         app->log->warn("Got an error, $! $@");
         my $escaped_error  = Mojo::ByteStream->new($@);
         my $escaped_result = Mojo::ByteStream->new(decode('utf8' => $result));
-        return $self->render_json({error  => $escaped_error->xml_escape->to_string,
+        return $self->render(json => {error  => $escaped_error->xml_escape->to_string,
                                    stdout => $escaped_result->xml_escape->to_string,
                                    stdin  => $self->param('intput')});
     }
     else {
         my $escaped_result = Mojo::ByteStream->new(decode('utf8' => $result));
-        return $self->render_json({stdout => $escaped_result->xml_escape->to_string,
+        return $self->render(json => {stdout => $escaped_result->xml_escape->to_string,
                                    stdin  => $self->param('input')});
     }
 };
